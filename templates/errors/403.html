@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden - Access Denied{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center text-center my-5">
+    <div class="col-md-6">
+        <div class="card card-custom p-5">
+            <i class="fa-solid fa-shield-halved fa-4x text-danger mb-3"></i>
+            <h2 class="fw-bold text-danger">403 - Access Forbidden</h2>
+            <p class="text-muted lead">
+                You do not have permission to view or manipulate this resource.
+            </p>
+            <p class="small text-muted mb-4">
+                <strong>Computer Networks Context:</strong> The server evaluated your role-based session credential and rejected the request to enforce least-privilege security.
+            </p>
+            <div>
+                <a href="{{ url_for('index') }}" class="btn btn-primary px-4">
+                    <i class="fa-solid fa-house me-2"></i>Return to Safe Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

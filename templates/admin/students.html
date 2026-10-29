@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Students - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-user-graduate me-2"></i>Student Records Management</h3>
+        <p class="text-muted mb-0">View registered students or enroll new student accounts</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+        <i class="fa-solid fa-user-plus me-1"></i> Enroll New Student
+    </button>
+</div>
+
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span><i class="fa-solid fa-table-list me-2"></i>Enrolled Students Directory</span>
+        <span class="badge bg-primary">{{ students|length }} Students</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Department</th>
+                        <th>Semester</th>
+                        <th>System Username</th>
+                        <th>Email</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                        <tr>
+                            <td class="fw-bold">{{ s.roll_no }}</td>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.department }}</td>
+                            <td><span class="badge bg-secondary">Sem {{ s.semester }}</span></td>
+                            <td><code>{{ s.username }}</code></td>
+                            <td>{{ s.email or '-' }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('admin_delete_student', student_id=s.id) }}" onsubmit="return confirm('Are you sure you want to delete student {{ s.name }}? This will also remove their attendance and marks.')" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Student Record">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No student records registered in database.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Enroll New Student -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Enroll New Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin_students') }}">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Roll Number</label>
+                            <input type="text" name="roll_no" class="form-control" placeholder="e.g. ECE2104" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Semester</label>
+                            <input type="number" name="semester" min="1" max="8" class="form-control" value="7" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Full Student Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Arun Varma" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Department</label>
+                            <select name="department" class="form-select" required>
+                                <option value="Electronics & Communication" selected>Electronics & Communication</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Email Address</label>
+                            <input type="email" name="email" class="form-control" placeholder="arun@student.college.edu">
+                        </div>
+                        <hr class="my-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Login Username</label>
+                            <input type="text" name="username" class="form-control" placeholder="e.g. arun" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Initial Password</label>
+                            <input type="password" name="password" class="form-control" placeholder="e.g. student123" required minlength="6">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check me-1"></i>Enroll Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

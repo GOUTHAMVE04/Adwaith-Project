@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Notices - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-bullhorn me-2"></i>Campus Notice Administration</h3>
+    <p class="text-muted mb-0">Publish official institutional notices or remove expired circulars</p>
+</div>
+
+<div class="row g-4">
+    <!-- Notice Creator Form -->
+    <div class="col-lg-5">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-bullhorn me-2"></i>Issue College Circular</span>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin_notices') }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Notice Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. End Semester Exam Fee Payment" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="General" selected>General</option>
+                            <option value="Academic">Academic</option>
+                            <option value="Exam">Exam</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Message Body</label>
+                        <textarea name="message" class="form-control" rows="5" placeholder="Enter official notice details here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                        <i class="fa-solid fa-tower-broadcast me-2"></i>Publish Notice Instantly
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Notices -->
+    <div class="col-lg-7">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-list-check me-2"></i>Published Notices</span>
+                <span class="badge bg-secondary">{{ notices|length }} Published</span>
+            </div>
+            <div class="card-body">
+                {% for n in notices %}
+                    <div class="notice-item position-relative">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-bold text-primary">{{ n.title }}</h6>
+                            <span class="badge bg-secondary">{{ n.category }}</span>
+                        </div>
+                        <p class="text-dark small mb-2">{{ n.message }}</p>
+                        <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
+                            <span><i class="fa-solid fa-user-tie me-1"></i>{{ n.author }} &bull; {{ n.created_at[:16] }}</span>
+                            <form method="POST" action="{{ url_for('admin_delete_notice', notice_id=n.id) }}" onsubmit="return confirm('Delete this notice?')" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Delete Notice">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No active notices published.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

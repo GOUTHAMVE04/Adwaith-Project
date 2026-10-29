@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - EduManage{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h3 class="fw-bold mb-1 text-primary">Welcome, {{ student.name }}!</h3>
+        <p class="text-muted mb-0">
+            Roll No: <strong>{{ student.roll_no }}</strong> | Department: <strong>{{ student.department }}</strong> | Semester: <strong>{{ student.semester }}</strong>
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('student_attendance') }}" class="btn btn-outline-primary me-2"><i class="fa-solid fa-calendar-check me-1"></i> Attendance</a>
+        <a href="{{ url_for('student_marks') }}" class="btn btn-primary"><i class="fa-solid fa-chart-line me-1"></i> My Marks</a>
+    </div>
+</div>
+
+<!-- Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom stat-card {% if attendance_pct >= 75 %}stat-green{% else %}stat-red{% endif %}">
+            <div class="stat-label">Overall Attendance</div>
+            <div class="stat-value {% if attendance_pct >= 75 %}text-success{% else %}text-danger{% endif %}">
+                {{ attendance_pct }}%
+            </div>
+            <small class="text-muted">Attended {{ attended }} of {{ total_classes }} sessions</small>
+            <div class="progress mt-2" style="height: 6px;">
+                <div class="progress-bar {% if attendance_pct >= 75 %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ attendance_pct }}%;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom stat-card stat-orange">
+            <div class="stat-label">Registered Semester</div>
+            <div class="stat-value text-dark">Semester {{ student.semester }}</div>
+            <small class="text-muted">{{ student.department }}</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom stat-card">
+            <div class="stat-label">Recent College Notices</div>
+            <div class="stat-value text-primary">{{ notices|length }}</div>
+            <small class="text-muted">Active broadcasts on server</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Today's Schedule -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-clock me-2"></i>Today's Class Schedule ({{ today_name }})</span>
+                <a href="{{ url_for('student_timetable') }}" class="small text-decoration-none">Full Timetable &rarr;</a>
+            </div>
+            <div class="card-body p-0">
+                {% if today_timetable %}
+                    <div class="list-group list-group-flush">
+                        {% for slot in today_timetable %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <div>
+                                    <h6 class="mb-1 fw-bold text-dark">{{ slot.subject_code }}: {{ slot.subject_name }}</h6>
+                                    <small class="text-muted"><i class="fa-solid fa-chalkboard-user me-1"></i>{{ slot.faculty_name }} | <i class="fa-solid fa-door-open me-1"></i>{{ slot.classroom }}</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill px-3 py-2">{{ slot.time_slot }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="fa-solid fa-couch fa-2x mb-2 text-secondary"></i>
+                        <p class="mb-0">No classes scheduled for today.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Notices -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-bullhorn me-2"></i>Campus Announcements</span>
+                <a href="{{ url_for('student_notices') }}" class="small text-decoration-none">View All &rarr;</a>
+            </div>
+            <div class="card-body">
+                {% for notice in notices %}
+                    <div class="notice-item">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-bold text-primary">{{ notice.title }}</h6>
+                            <span class="badge bg-secondary">{{ notice.category }}</span>
+                        </div>
+                        <p class="text-dark small mb-1">{{ notice.message }}</p>
+                        <small class="text-muted"><i class="fa-solid fa-user-pen me-1"></i>{{ notice.author }} &bull; {{ notice.created_at[:10] }}</small>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No recent notices available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

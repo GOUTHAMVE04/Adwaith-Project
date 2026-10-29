@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Post Academic Notice - Faculty Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-bullhorn me-2"></i>Academic Notices & Updates</h3>
+    <p class="text-muted mb-0">Publish announcements for students or view college-wide circulars</p>
+</div>
+
+<div class="row g-4">
+    <!-- Notice Publishing Form -->
+    <div class="col-lg-5">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-pen-nib me-2"></i>Publish Academic Announcement</span>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('faculty_notices') }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Notice Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Project Submission Deadline" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="Academic" selected>Academic</option>
+                            <option value="Exam">Exam / Test</option>
+                            <option value="Urgent">Urgent</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Notice Message</label>
+                        <textarea name="message" class="form-control" rows="5" placeholder="Enter detailed notice content here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                        <i class="fa-solid fa-paper-plane me-2"></i>Broadcast Notice to Students
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Notices List -->
+    <div class="col-lg-7">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-clock-rotate-left me-2"></i>Active Campus Circulars</span>
+            </div>
+            <div class="card-body">
+                {% for n in notices %}
+                    <div class="notice-item">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-bold text-primary">{{ n.title }}</h6>
+                            <span class="badge bg-secondary">{{ n.category }}</span>
+                        </div>
+                        <p class="text-dark small mb-1">{{ n.message }}</p>
+                        <div class="d-flex justify-content-between text-muted small border-top pt-1 mt-1">
+                            <span><i class="fa-solid fa-user-tie me-1"></i>{{ n.author }}</span>
+                            <span>{{ n.created_at[:16] }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No notices published yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Marks - Faculty Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-pen-to-square me-2"></i>Assessment Marks Entry</h3>
+    <p class="text-muted mb-0">Record exam and assignment scores directly into the college database</p>
+</div>
+
+<!-- Selection Filter -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('faculty_marks') }}" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold small">Select Subject</label>
+            <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                {% for sub in assigned_subjects %}
+                    <option value="{{ sub.id }}" {% if selected_subject and selected_subject.id == sub.id %}selected{% endif %}>
+                        {{ sub.subject_code }} - {{ sub.subject_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold small">Assessment Type</label>
+            <select name="assessment" class="form-select" onchange="this.form.submit()">
+                {% for test in ['Series Test 1', 'Series Test 2', 'Assignment 1', 'Assignment 2', 'End Semester'] %}
+                    <option value="{{ test }}" {% if selected_assessment == test %}selected{% endif %}>{{ test }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="fa-solid fa-filter me-1"></i>Load Marks Sheet
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if selected_subject %}
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span>
+            <strong>{{ selected_subject.subject_code }}: {{ selected_subject.subject_name }}</strong> &bull; Assessment: <strong>{{ selected_assessment }}</strong>
+        </span>
+        <span class="badge bg-primary">Department: {{ selected_subject.department }} (Sem {{ selected_subject.semester }})</span>
+    </div>
+    <div class="card-body p-0">
+        <form method="POST" action="{{ url_for('faculty_marks') }}">
+            <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+            <input type="hidden" name="assessment" value="{{ selected_assessment }}">
+
+            <div class="p-3 bg-light border-bottom d-flex align-items-center gap-3">
+                <label class="fw-semibold small mb-0">Maximum Marks for this Assessment:</label>
+                <input type="number" step="0.5" name="max_marks" class="form-control" style="max-width: 120px;" value="{{ students[0].max_marks if students and students[0].max_marks else 50.0 }}" required>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Roll Number</th>
+                            <th style="width: 50%;">Student Name</th>
+                            <th style="width: 30%;" class="text-center">Marks Obtained</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in students %}
+                            <tr>
+                                <td class="fw-bold">{{ st.roll_no }}</td>
+                                <td>{{ st.name }}</td>
+                                <td class="text-center">
+                                    <div class="input-group justify-content-center" style="max-width: 160px; margin: auto;">
+                                        <input type="number" step="0.5" min="0" max="100" name="marks_{{ st.id }}" class="form-control text-center fw-bold" value="{{ st.marks_obtained if st.marks_obtained is not none else '' }}" placeholder="Enter marks">
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">No students enrolled in this class.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if students %}
+                <div class="p-3 bg-light border-top text-end">
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-semibold">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Submit & Save Marks to Database
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

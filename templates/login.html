@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Educational Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="card card-custom p-4">
+            <div class="text-center mb-4">
+                <div class="college-logo-icon mb-2" style="width: 54px; height: 54px; font-size: 1.8rem; margin: auto; background: #e3f2fd; color: #0d47a1;">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <h4 class="fw-bold text-primary mb-1">College Portal Login</h4>
+                <p class="text-muted small">Centralized Client–Server Academic System</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold small">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-semibold small">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+                </button>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Demo Quick-Fill Controls for Presentation & Viva -->
+            <div>
+                <p class="text-center text-muted small fw-semibold mb-2">
+                    <i class="fa-solid fa-flask-vial me-1"></i> Quick-Fill Demo Credentials (Click to test):
+                </p>
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <button type="button" class="btn btn-sm btn-outline-info demo-pill" onclick="fillLogin('adwaith', 'student123')">
+                        <i class="fa-solid fa-user-graduate me-1"></i> Student
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-dark demo-pill" onclick="fillLogin('prof_smith', 'faculty123')">
+                        <i class="fa-solid fa-chalkboard-user me-1"></i> Faculty
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success demo-pill" onclick="fillLogin('parent_adwaith', 'parent123')">
+                        <i class="fa-solid fa-users me-1"></i> Parent
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger demo-pill" onclick="fillLogin('admin', 'admin123')">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Computer Networks Concept Box -->
+        <div class="card card-custom mt-3 p-3 bg-light border-0">
+            <div class="d-flex align-items-start gap-2">
+                <i class="fa-solid fa-network-wired text-primary mt-1"></i>
+                <small class="text-muted">
+                    <strong>Network Concept:</strong> Submitting this form sends an <code>HTTP POST</code> request over TCP/IP to the central Flask server. The server verifies credentials against <code>college.db</code> using secure SHA-256 hash checking and returns an HTTP session cookie.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

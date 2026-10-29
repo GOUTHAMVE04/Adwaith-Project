@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - Faculty Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-user-check me-2"></i>Daily Attendance Management</h3>
+    <p class="text-muted mb-0">Record or update student attendance for your assigned subjects</p>
+</div>
+
+<!-- Selection Filter Card -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('faculty_attendance') }}" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold small">Select Subject</label>
+            <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                {% for sub in assigned_subjects %}
+                    <option value="{{ sub.id }}" {% if selected_subject and selected_subject.id == sub.id %}selected{% endif %}>
+                        {{ sub.subject_code }} - {{ sub.subject_name }} (Sem {{ sub.semester }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold small">Attendance Date</label>
+            <input type="date" name="date" class="form-control" value="{{ selected_date }}" onchange="this.form.submit()">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-outline-primary w-100">
+                <i class="fa-solid fa-filter me-1"></i>Load Student List
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if selected_subject %}
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span>
+            <strong>{{ selected_subject.subject_code }}: {{ selected_subject.subject_name }}</strong> &bull; Date: {{ selected_date }}
+        </span>
+        <span class="badge bg-primary">Department: {{ selected_subject.department }}</span>
+    </div>
+    <div class="card-body p-0">
+        <form method="POST" action="{{ url_for('faculty_attendance') }}">
+            <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+            <input type="hidden" name="date" value="{{ selected_date }}">
+
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Roll Number</th>
+                            <th style="width: 45%;">Student Name</th>
+                            <th style="width: 40%;" class="text-center">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in students %}
+                            <tr>
+                                <td class="fw-bold">{{ st.roll_no }}</td>
+                                <td>{{ st.name }}</td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="status_{{ st.id }}" id="present_{{ st.id }}" value="Present" {% if st.current_status == 'Present' %}checked{% endif %}>
+                                        <label class="btn btn-outline-success btn-sm px-3" for="present_{{ st.id }}">
+                                            <i class="fa-solid fa-check me-1"></i>Present
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="status_{{ st.id }}" id="absent_{{ st.id }}" value="Absent" {% if st.current_status == 'Absent' %}checked{% endif %}>
+                                        <label class="btn btn-outline-danger btn-sm px-3" for="absent_{{ st.id }}">
+                                            <i class="fa-solid fa-xmark me-1"></i>Absent
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">No students enrolled in this department/semester.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if students %}
+                <div class="p-3 bg-light border-top text-end">
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-semibold">
+                        <i class="fa-solid fa-cloud-arrow-up me-2"></i>Save Attendance to Server
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="fa-solid fa-circle-info me-2"></i>Please select a subject to load and manage attendance.
+</div>
+{% endif %}
+{% endblock %}
+

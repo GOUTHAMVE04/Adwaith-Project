@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}College Circulars - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-bullhorn me-2"></i>College Notices & Announcements</h3>
+    <p class="text-muted mb-0">Official updates from the institution for parents and guardians</p>
+</div>
+
+<div class="row g-3">
+    {% for n in notices %}
+        <div class="col-12">
+            <div class="card card-custom p-3 border-start border-4 {% if n.category == 'Exam' %}border-warning{% elif n.category == 'Urgent' %}border-danger{% elif n.category == 'Academic' %}border-primary{% else %}border-secondary{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold text-dark mb-0">{{ n.title }}</h5>
+                    <span class="badge {% if n.category == 'Exam' %}bg-warning text-dark{% elif n.category == 'Urgent' %}bg-danger{% elif n.category == 'Academic' %}bg-primary{% else %}bg-secondary{% endif %}">
+                        {{ n.category }}
+                    </span>
+                </div>
+                <p class="text-dark mb-2">{{ n.message }}</p>
+                <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
+                    <span><i class="fa-solid fa-user-tie me-1"></i>Issued by: <strong>{{ n.author }}</strong></span>
+                    <span><i class="fa-regular fa-clock me-1"></i>{{ n.created_at }}</span>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12 text-center text-muted py-5">
+            <h5>No college circulars available at this time.</h5>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

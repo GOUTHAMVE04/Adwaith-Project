@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Teaching Schedule - EduManage{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-clock me-2"></i>My Teaching Schedule</h3>
+        <p class="text-muted mb-0">Faculty: <strong>{{ faculty.name }}</strong> ({{ faculty.designation }})</p>
+    </div>
+    <button onclick="window.print()" class="btn btn-outline-secondary no-print">
+        <i class="fa-solid fa-print me-1"></i> Print Schedule
+    </button>
+</div>
+
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span><i class="fa-solid fa-calendar-week me-2"></i>Weekly Lecture Slots</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Time Slot</th>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in timetable %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ slot.day_of_week }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ slot.time_slot }}</span></td>
+                            <td class="fw-bold">{{ slot.subject_code }}</td>
+                            <td>{{ slot.subject_name }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No scheduled lectures assigned.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

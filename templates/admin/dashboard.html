@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard - EduManage{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h3 class="fw-bold mb-1 text-primary"><i class="fa-solid fa-gauge-high me-2"></i>Administration Management Console</h3>
+        <p class="text-muted mb-0">Centralized Server Control & Academic Operations Portal</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('admin_reports') }}" class="btn btn-outline-primary me-2"><i class="fa-solid fa-file-invoice me-1"></i> Academic Reports</a>
+        <a href="{{ url_for('admin_notices') }}" class="btn btn-primary"><i class="fa-solid fa-bullhorn me-1"></i> Post Circular</a>
+    </div>
+</div>
+
+<!-- Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card card-custom stat-card">
+            <div class="stat-label">Total Students</div>
+            <div class="stat-value text-primary">{{ stats.total_students }}</div>
+            <small class="text-muted"><a href="{{ url_for('admin_students') }}" class="text-decoration-none">Manage &rarr;</a></small>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card card-custom stat-card stat-green">
+            <div class="stat-label">Faculty Staff</div>
+            <div class="stat-value text-success">{{ stats.total_faculty }}</div>
+            <small class="text-muted"><a href="{{ url_for('admin_faculty') }}" class="text-decoration-none">Manage &rarr;</a></small>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card card-custom stat-card stat-orange">
+            <div class="stat-label">Active Subjects</div>
+            <div class="stat-value text-dark">{{ stats.total_subjects }}</div>
+            <small class="text-muted"><a href="{{ url_for('admin_subjects') }}" class="text-decoration-none">Manage &rarr;</a></small>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card card-custom stat-card stat-red">
+            <div class="stat-label">Notices Published</div>
+            <div class="stat-value text-danger">{{ stats.total_notices }}</div>
+            <small class="text-muted"><a href="{{ url_for('admin_notices') }}" class="text-decoration-none">Manage &rarr;</a></small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Fast Management Action Tiles -->
+    <div class="col-lg-7">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-sliders me-2"></i>Core System Modules</span>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="{{ url_for('admin_students') }}" class="card card-custom text-decoration-none p-3 h-100 border text-dark">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="college-logo-icon bg-primary text-white"><i class="fa-solid fa-user-graduate"></i></div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Student Enrollment</h6>
+                                    <small class="text-muted">Register students, assign logins</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('admin_faculty') }}" class="card card-custom text-decoration-none p-3 h-100 border text-dark">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="college-logo-icon bg-success text-white"><i class="fa-solid fa-chalkboard-user"></i></div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Faculty Roster</h6>
+                                    <small class="text-muted">Manage instructors & departments</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('admin_subjects') }}" class="card card-custom text-decoration-none p-3 h-100 border text-dark">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="college-logo-icon bg-warning text-dark"><i class="fa-solid fa-book"></i></div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Course Offerings</h6>
+                                    <small class="text-muted">Add courses & map faculty</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('admin_timetable') }}" class="card card-custom text-decoration-none p-3 h-100 border text-dark">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="college-logo-icon bg-info text-white"><i class="fa-solid fa-calendar-days"></i></div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Master Timetable</h6>
+                                    <small class="text-muted">Schedule classes & halls</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Circulars -->
+    <div class="col-lg-5">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-bullhorn me-2"></i>Campus Announcements</span>
+                <a href="{{ url_for('admin_notices') }}" class="small text-decoration-none">Manage &rarr;</a>
+            </div>
+            <div class="card-body">
+                {% for n in notices %}
+                    <div class="notice-item">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-bold text-primary">{{ n.title }}</h6>
+                            <span class="badge bg-secondary">{{ n.category }}</span>
+                        </div>
+                        <p class="text-dark small mb-1">{{ n.message[:90] }}...</p>
+                        <small class="text-muted"><i class="fa-solid fa-user me-1"></i>{{ n.author }} &bull; {{ n.created_at[:10] }}</small>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No active notices.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

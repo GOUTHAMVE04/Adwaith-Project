@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Dashboard - EduManage{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h3 class="fw-bold mb-1 text-primary">Faculty Portal: {{ faculty.name }}</h3>
+        <p class="text-muted mb-0">
+            Employee ID: <strong>{{ faculty.employee_id }}</strong> | Department: <strong>{{ faculty.department }}</strong> | Designation: <strong>{{ faculty.designation }}</strong>
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('faculty_attendance') }}" class="btn btn-primary me-2"><i class="fa-solid fa-user-check me-1"></i> Mark Attendance</a>
+        <a href="{{ url_for('faculty_marks') }}" class="btn btn-outline-primary"><i class="fa-solid fa-pen-to-square me-1"></i> Enter Marks</a>
+    </div>
+</div>
+
+<!-- Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom stat-card">
+            <div class="stat-label">Assigned Subjects</div>
+            <div class="stat-value text-primary">{{ assigned_subjects|length }}</div>
+            <small class="text-muted">Active courses this semester</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom stat-card stat-green">
+            <div class="stat-label">Academic Terminal</div>
+            <div class="stat-value text-success">Online</div>
+            <small class="text-muted">TCP Connection active</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom stat-card stat-orange">
+            <div class="stat-label">Recent Notices</div>
+            <div class="stat-value text-dark">{{ notices|length }}</div>
+            <small class="text-muted">Published campus notices</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Assigned Subjects List -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-book-open me-2"></i>My Assigned Subjects</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for sub in assigned_subjects %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark">{{ sub.subject_code }}: {{ sub.subject_name }}</h6>
+                                <small class="text-muted">{{ sub.department }} &bull; Semester {{ sub.semester }}</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('faculty_attendance', subject_id=sub.id) }}" class="btn btn-sm btn-outline-primary" title="Attendance">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </a>
+                                <a href="{{ url_for('faculty_marks', subject_id=sub.id) }}" class="btn btn-sm btn-outline-success" title="Marks">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="p-4 text-center text-muted">No subjects currently assigned to you.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Notices -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100">
+            <div class="card-header-custom">
+                <span><i class="fa-solid fa-bolt me-2"></i>Quick Faculty Operations</span>
+                <a href="{{ url_for('faculty_notices') }}" class="small text-decoration-none">Post Notice &rarr;</a>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 mb-4">
+                    <a href="{{ url_for('faculty_attendance') }}" class="btn btn-outline-primary text-start py-2">
+                        <i class="fa-solid fa-calendar-check me-2"></i>Take Daily Student Attendance
+                    </a>
+                    <a href="{{ url_for('faculty_marks') }}" class="btn btn-outline-primary text-start py-2">
+                        <i class="fa-solid fa-marker me-2"></i>Enter Internal / Series Exam Marks
+                    </a>
+                    <a href="{{ url_for('faculty_timetable') }}" class="btn btn-outline-primary text-start py-2">
+                        <i class="fa-solid fa-calendar-week me-2"></i>View My Teaching Schedule
+                    </a>
+                </div>
+
+                <h6 class="fw-bold text-muted mb-2">Recent Announcements:</h6>
+                {% for n in notices %}
+                    <div class="notice-item py-2">
+                        <div class="fw-semibold text-primary small">{{ n.title }}</div>
+                        <div class="text-muted small">{{ n.message[:80] }}...</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

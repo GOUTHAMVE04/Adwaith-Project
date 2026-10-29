@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Ward Attendance - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-calendar-check me-2"></i>Ward's Attendance Statement</h3>
+        <p class="text-muted mb-0">Student: <strong>{{ student.name }}</strong> (Roll No: {{ student.roll_no }})</p>
+    </div>
+    <button onclick="window.print()" class="btn btn-outline-secondary no-print">
+        <i class="fa-solid fa-print me-1"></i> Print Report
+    </button>
+</div>
+
+<!-- Subject Summary -->
+<div class="card card-custom mb-4">
+    <div class="card-header-custom">
+        <span><i class="fa-solid fa-chart-pie me-2"></i>Subject-Wise Attendance Overview</span>
+        <span class="badge bg-info text-dark">University Minimum Requirement: 75%</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Title</th>
+                        <th class="text-center">Total Sessions</th>
+                        <th class="text-center">Attended</th>
+                        <th class="text-center">Percentage</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in subject_attendance %}
+                        {% set pct = (item.attended / item.total_conducted * 100)|round(1) if item.total_conducted > 0 else 0 %}
+                        <tr>
+                            <td class="fw-bold">{{ item.subject_code }}</td>
+                            <td>{{ item.subject_name }}</td>
+                            <td class="text-center">{{ item.total_conducted }}</td>
+                            <td class="text-center">{{ item.attended }}</td>
+                            <td class="text-center fw-bold {% if pct >= 75 %}text-success{% else %}text-danger{% endif %}">
+                                {{ pct }}%
+                            </td>
+                            <td class="text-center">
+                                {% if pct >= 75 %}
+                                    <span class="badge bg-success-subtle text-success border border-success px-2 py-1">Satisfactory</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">Shortage Alert</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">No attendance data available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Daily History -->
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span><i class="fa-solid fa-list-check me-2"></i>Date-Wise Daily Log</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th class="text-center">Recorded Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in attendance_logs %}
+                        <tr>
+                            <td class="fw-semibold">{{ log.date }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ log.subject_code }}</span></td>
+                            <td>{{ log.subject_name }}</td>
+                            <td class="text-center">
+                                {% if log.status == 'Present' %}
+                                    <span class="badge badge-present px-3 py-1"><i class="fa-solid fa-check me-1"></i>Present</span>
+                                {% else %}
+                                    <span class="badge badge-absent px-3 py-1"><i class="fa-solid fa-xmark me-1"></i>Absent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">No daily records found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
