@@ -1,0 +1,23 @@
+================================================================
+COURSE: ECT423 COMPUTER NETWORKS (S7 ECE)
+MODULE 1: INTRODUCTION TO COMPUTER NETWORKS & ARCHITECTURE
+Faculty: Dr. John Smith
+================================================================
+
+TOPICS COVERED:
+1. Client-Server Architecture vs Peer-to-Peer Architecture
+2. OSI 7-Layer Reference Model & TCP/IP Protocol Stack
+3. Network Topologies (Star, Mesh, Bus, Hybrid)
+4. Packet Switching vs Circuit Switching
+5. Socket Programming Fundamentals & Port Addressing (HTTP: Port 80/5000, HTTPS: 443)
+
+KEY FORMULAS & NUMERICALS:
+- Transmission Delay: D_trans = L / R (Packet length / Bandwidth)
+- Propagation Delay: D_prop = d / s (Distance / Propagation Speed)
+- Throughput and Bandwidth-Delay Product (BDP = R * RTT)
+
+REVIEW QUESTIONS FOR SERIES EXAM 1:
+1. Explain the three-way handshake mechanism in TCP with state transition diagram.
+2. Differentiate between IPv4 and IPv6 packet header formats.
+3. Why is HTTP referred to as a stateless protocol, and how do cookies/sessions maintain state?
+

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Performance Analysis - EduManage{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-chart-column me-2"></i>Performance & Attendance Analytics</h3>
+        <p class="text-muted mb-0">Student: <strong>{{ student.name }}</strong> (Roll No: {{ student.roll_no }})</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Attendance Analysis -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100 p-4">
+            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chart-pie me-2"></i>Subject-Wise Attendance Distribution</h5>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Conducted</th>
+                            <th>Attended</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in subject_attendance %}
+                            {% set pct = (item.attended / item.total_conducted * 100)|round(1) if item.total_conducted > 0 else 0 %}
+                            <tr>
+                                <td><strong>{{ item.subject_code }}</strong></td>
+                                <td>{{ item.total_conducted }}</td>
+                                <td>{{ item.attended }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1" style="height: 8px;">
+                                            <div class="progress-bar {% if pct >= 75 %}bg-success{% else %}bg-danger{% endif %}" style="width: {{ pct }}%;"></div>
+                                        </div>
+                                        <span class="small fw-bold">{{ pct }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marks Analysis -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100 p-4">
+            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chart-line me-2"></i>Internal Assessment Progression</h5>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Assessment</th>
+                            <th>Score</th>
+                            <th>Performance Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in marks_list %}
+                            {% set pct = (m.marks_obtained / m.max_marks * 100)|round(1) %}
+                            <tr>
+                                <td><strong>{{ m.subject_code }}</strong></td>
+                                <td>{{ m.assessment_name }}</td>
+                                <td>{{ m.marks_obtained }} / {{ m.max_marks }}</td>
+                                <td>
+                                    <span class="badge {% if pct >= 80 %}bg-success{% elif pct >= 60 %}bg-primary{% else %}bg-warning text-dark{% endif %} px-2 py-1">
+                                        {% if pct >= 90 %}O (Outstanding){% elif pct >= 80 %}A+ (Excellent){% elif pct >= 70 %}A (Very Good){% else %}B (Good){% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

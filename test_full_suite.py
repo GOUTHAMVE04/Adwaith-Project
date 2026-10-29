@@ -26,7 +26,7 @@ class CollegeManagementTestCase(unittest.TestCase):
         self.assertIn(b'Administration Management Console', res.data)
 
         # 2. Check Admin endpoints
-        endpoints = ['/admin/students', '/admin/faculty', '/admin/subjects', '/admin/timetable', '/admin/notices', '/admin/reports']
+        endpoints = ['/admin/students', '/admin/faculty', '/admin/subjects', '/admin/timetable', '/admin/notices', '/admin/reports', '/admin/fees']
         for ep in endpoints:
             r = self.client.get(ep)
             self.assertEqual(r.status_code, 200, f"Endpoint {ep} failed with {r.status_code}")
@@ -40,28 +40,37 @@ class CollegeManagementTestCase(unittest.TestCase):
         res = self.client.post('/login', data={'username': 'prof_smith', 'password': 'faculty123'}, follow_redirects=True)
         self.assertIn(b'Faculty Portal: Dr. John Smith', res.data)
 
-        # Test attendance & marks pages
-        r_att = self.client.get('/faculty/attendance')
-        self.assertEqual(r_att.status_code, 200)
-
-        r_marks = self.client.get('/faculty/marks')
-        self.assertEqual(r_marks.status_code, 200)
-
-        r_tt = self.client.get('/faculty/timetable')
-        self.assertEqual(r_tt.status_code, 200)
-
-        r_notices = self.client.get('/faculty/notices')
-        self.assertEqual(r_notices.status_code, 200)
+        # Test attendance, marks, timetable, notices, fees, materials, assignments pages
+        endpoints = ['/faculty/attendance', '/faculty/marks', '/faculty/timetable', '/faculty/notices', '/faculty/fees', '/faculty/materials', '/faculty/assignments']
+        for ep in endpoints:
+            r = self.client.get(ep)
+            self.assertEqual(r.status_code, 200, f"Faculty endpoint {ep} failed with {r.status_code}")
 
         self.client.get('/logout')
 
     def test_05_student_workflow(self):
         # Login as Adwaith
         res = self.client.post('/login', data={'username': 'adwaith', 'password': 'student123'}, follow_redirects=True)
-        self.assertIn(b'Welcome, Adwaith R.!', res.data)
+        self.assertIn(b'Adwaith Krishna R', res.data)
 
         # Test Student pages
-        endpoints = ['/student/attendance', '/student/marks', '/student/timetable', '/student/notices']
+        endpoints = [
+            '/student/dashboard',
+            '/student/attendance',
+            '/student/marks',
+            '/student/timetable',
+            '/student/notices',
+            '/student/fees',
+            '/student/materials',
+            '/student/assignments',
+            '/student/courses',
+            '/student/faculties',
+            '/student/analysis',
+            '/student/lab',
+            '/student/quiz',
+            '/student/videos',
+            '/student/university_exam'
+        ]
         for ep in endpoints:
             r = self.client.get(ep)
             self.assertEqual(r.status_code, 200, f"Student endpoint {ep} failed with {r.status_code}")
@@ -76,7 +85,7 @@ class CollegeManagementTestCase(unittest.TestCase):
         # Login as Parent
         res = self.client.post('/login', data={'username': 'parent_adwaith', 'password': 'parent123'}, follow_redirects=True)
         self.assertIn(b'Parent Portal', res.data)
-        self.assertIn(b'Adwaith R.', res.data)
+        self.assertIn(b'Adwaith Krishna R', res.data)
 
         # Test Parent pages
         endpoints = ['/parent/attendance', '/parent/marks', '/parent/notices']

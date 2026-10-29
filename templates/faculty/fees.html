@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Student Fees - Faculty Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-badge-check me-2"></i>Student Fee Verification Desk</h3>
+        <p class="text-muted mb-0">Teacher In-Charge / Class Advisor: <strong>{{ faculty.name }}</strong> ({{ faculty.department }})</p>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="card card-custom p-3 mb-4">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="small fw-semibold text-muted me-2">Filter by Status:</span>
+        <a href="{{ url_for('faculty_fees') }}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+            All ({{ fees|length }})
+        </a>
+        <a href="{{ url_for('faculty_fees', status='Paid') }}" class="btn btn-sm {% if current_status == 'Paid' %}btn-warning text-dark{% else %}btn-outline-warning text-dark{% endif %} rounded-pill px-3 fw-semibold">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> Awaiting Verification
+        </a>
+        <a href="{{ url_for('faculty_fees', status='Verified') }}" class="btn btn-sm {% if current_status == 'Verified' %}btn-success{% else %}btn-outline-success{% endif %} rounded-pill px-3">
+            <i class="fa-solid fa-circle-check me-1"></i> Verified
+        </a>
+        <a href="{{ url_for('faculty_fees', status='Pending') }}" class="btn btn-sm {% if current_status == 'Pending' %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill px-3">
+            <i class="fa-solid fa-circle-xmark me-1"></i> Unpaid / Due
+        </a>
+    </div>
+</div>
+
+<!-- Fees Verification Table -->
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span><i class="fa-solid fa-list-check me-2"></i>Department Student Fee Submissions</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Fee Particulars</th>
+                        <th>Amount</th>
+                        <th>Transaction UTR / Ref</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Teacher Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fees %}
+                        <tr>
+                            <td class="fw-bold">{{ f.roll_no }}</td>
+                            <td class="fw-semibold text-dark">{{ f.student_name }}</td>
+                            <td>{{ f.fee_type }}</td>
+                            <td class="fw-bold text-primary">₹{{ f.amount }}</td>
+                            <td>
+                                {% if f.transaction_ref %}
+                                    <code>{{ f.transaction_ref }}</code>
+                                    <div class="small text-muted">{{ f.payment_method }} &bull; {{ f.paid_at[:16] }}</div>
+                                {% else %}
+                                    <span class="text-muted small fst-italic">Not submitted</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if f.status == 'Verified' %}
+                                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1">
+                                        <i class="fa-solid fa-check me-1"></i>Verified
+                                    </span>
+                                    <div class="small text-muted">{{ f.verifier_name }}</div>
+                                {% elif f.status == 'Paid' %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-3 py-1">
+                                        <i class="fa-solid fa-clock me-1"></i>Action Needed
+                                    </span>
+                                {% elif f.status == 'Rejected' %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">
+                                        Rejected
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary px-3 py-1">
+                                        Pending Payment
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if f.status == 'Paid' %}
+                                    <button class="btn btn-sm btn-success fw-semibold px-3 me-1" data-bs-toggle="modal" data-bs-target="#verifyModal{{ f.id }}">
+                                        <i class="fa-solid fa-check-double me-1"></i>Verify Fee
+                                    </button>
+                                {% elif f.status == 'Verified' %}
+                                    <span class="badge bg-light text-success border"><i class="fa-solid fa-check me-1"></i>Approved</span>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Verification Modal -->
+                        <div class="modal fade" id="verifyModal{{ f.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content rounded-4 border-0 shadow">
+                                    <div class="modal-header bg-success text-white">
+                                        <h6 class="modal-title fw-bold"><i class="fa-solid fa-shield-check me-2"></i>Verify Fee Payment: {{ f.student_name }}</h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('faculty_fee_verify', fee_id=f.id) }}">
+                                        <div class="modal-body p-4">
+                                            <div class="card bg-light p-3 border-0 mb-3 small">
+                                                <div><strong>Student:</strong> {{ f.student_name }} (Roll No: {{ f.roll_no }})</div>
+                                                <div><strong>Fee Particulars:</strong> {{ f.fee_type }}</div>
+                                                <div><strong>Amount:</strong> ₹{{ f.amount }}</div>
+                                                <div><strong>Payment Mode:</strong> {{ f.payment_method }}</div>
+                                                <div><strong>Transaction UTR / Ref:</strong> <code>{{ f.transaction_ref }}</code></div>
+                                                <div><strong>Paid At:</strong> {{ f.paid_at }}</div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-semibold">Verification Decision</label>
+                                                <select name="decision" class="form-select fw-semibold" required>
+                                                    <option value="Verified" selected>Approve & Verify (Payment Confirmed)</option>
+                                                    <option value="Rejected">Reject (Invalid UTR / Uncredited Payment)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-semibold">Teacher Verification Remarks</label>
+                                                <input type="text" name="remarks" class="form-control" value="Verified against college bank credit record." required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-success btn-sm px-3 fw-semibold">
+                                                <i class="fa-solid fa-check me-1"></i>Confirm Verification
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No fee records found for this filter.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

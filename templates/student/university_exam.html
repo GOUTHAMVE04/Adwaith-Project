@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}University Exam Portal - EduManage{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-award me-2"></i>APJ Abdul Kalam Technological University (KTU) Portal</h3>
+    <p class="text-muted mb-0">Seventh Semester B.Tech Examination Registration & Hall Ticket</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card card-custom p-4 h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-id-card-clip text-primary me-2"></i>Hall Ticket & Eligibility Status</h5>
+            
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
+                <span class="small fw-bold">Attendance Eligibility (&gt; 75%):</span>
+                <span class="badge bg-success-subtle text-success border border-success px-3 py-1">Eligible</span>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
+                <span class="small fw-bold">Exam Registration Fee Status:</span>
+                {% if exam_fee and exam_fee.status == 'Verified' %}
+                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1">Fee Cleared</span>
+                {% elif exam_fee and exam_fee.status == 'Paid' %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-3 py-1">Paid (Pending Teacher Verify)</span>
+                {% else %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">Pending Payment</span>
+                {% endif %}
+            </div>
+
+            <div class="mt-auto">
+                {% if exam_fee and exam_fee.status == 'Verified' %}
+                    <button onclick="window.print()" class="btn btn-success w-100 fw-semibold">
+                        <i class="fa-solid fa-download me-2"></i>Download University Hall Ticket
+                    </button>
+                {% else %}
+                    <a href="{{ url_for('student_fees') }}" class="btn btn-primary w-100 fw-semibold">
+                        <i class="fa-solid fa-receipt me-2"></i>Pay Exam Fee to Unlock Hall Ticket
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card card-custom p-4 h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-bullhorn text-danger me-2"></i>KTU Examination Guidelines</h5>
+            <ul class="small text-muted ps-3 mb-0">
+                <li class="mb-2">Students must be seated in the examination hall 15 minutes prior to the commencement of the exam.</li>
+                <li class="mb-2">Smartphones, smartwatches, and programmable devices are strictly prohibited.</li>
+                <li class="mb-2">Admit card / Hall ticket signed by the Principal and College ID card are mandatory for entry.</li>
+                <li class="mb-2">For grievances regarding question papers, submit remarks to the Chief Superintendent within 24 hours.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

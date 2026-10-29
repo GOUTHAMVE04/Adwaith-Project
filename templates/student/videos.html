@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Video Lectures - EduManage{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-circle-play me-2"></i>Curated Video Lectures & NPTEL Sessions</h3>
+    <p class="text-muted mb-0">Recommended video modules for S7 Electronics & Communication</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card card-custom h-100 overflow-hidden">
+            <div class="bg-dark text-white p-4 text-center">
+                <i class="fa-brands fa-youtube fa-3x text-danger mb-2"></i>
+                <div class="fw-bold">NPTEL: Computer Networks</div>
+                <small class="opacity-75">IIT Kharagpur &bull; Prof. S. Chakraborty</small>
+            </div>
+            <div class="card-body p-3">
+                <p class="small text-muted mb-3">Comprehensive 40-lecture video course covering OSI layers, TCP sliding window, and routing protocols.</p>
+                <a href="https://nptel.ac.in/courses/106105183" target="_blank" class="btn btn-outline-danger btn-sm w-100 fw-semibold">
+                    <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Open Video Course
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card card-custom h-100 overflow-hidden">
+            <div class="bg-primary text-white p-4 text-center">
+                <i class="fa-solid fa-video fa-3x mb-2"></i>
+                <div class="fw-bold">Department Socket Tutorial</div>
+                <small class="opacity-75">Dr. John Smith &bull; S7 ECE</small>
+            </div>
+            <div class="card-body p-3">
+                <p class="small text-muted mb-3">Live demo of Python socket programming, multithreading, and packet capture on Wireshark.</p>
+                <a href="#" class="btn btn-outline-primary btn-sm w-100 fw-semibold">
+                    <i class="fa-solid fa-play me-1"></i>Stream Lecture
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

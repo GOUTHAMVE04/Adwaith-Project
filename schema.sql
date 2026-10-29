@@ -106,3 +106,65 @@ CREATE TABLE IF NOT EXISTS notices (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+
+-- 10. Fees Table (Admin creates demands, Students pay, Teachers/Faculty verify)
+CREATE TABLE IF NOT EXISTS fees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    fee_type TEXT NOT NULL,
+    amount REAL NOT NULL,
+    due_date DATE NOT NULL,
+    status TEXT CHECK(status IN ('Pending', 'Paid', 'Verified', 'Rejected')) DEFAULT 'Pending',
+    payment_method TEXT,
+    transaction_ref TEXT,
+    paid_at TIMESTAMP,
+    verified_by_faculty_id INTEGER,
+    verified_at TIMESTAMP,
+    remarks TEXT,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (verified_by_faculty_id) REFERENCES faculty(id) ON DELETE SET NULL
+);
+
+-- 11. Study Materials & Notes Table (Faculty upload, Students access)
+CREATE TABLE IF NOT EXISTS study_materials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject_id INTEGER NOT NULL,
+    faculty_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    material_type TEXT CHECK(material_type IN ('Lecture Notes', 'Question Bank', 'Lab Manual', 'Video Lecture', 'Syllabus')) DEFAULT 'Lecture Notes',
+    file_name TEXT,
+    file_url TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE CASCADE
+);
+
+-- 12. Assignments Table
+CREATE TABLE IF NOT EXISTS assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject_id INTEGER NOT NULL,
+    faculty_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    due_date DATE NOT NULL,
+    max_marks REAL DEFAULT 20.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(id) ON DELETE CASCADE
+);
+
+-- 13. Assignment Submissions Table
+CREATE TABLE IF NOT EXISTS assignment_submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignment_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    submission_text TEXT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    marks_awarded REAL,
+    feedback TEXT,
+    status TEXT CHECK(status IN ('Submitted', 'Evaluated')) DEFAULT 'Submitted',
+    FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    UNIQUE(assignment_id, student_id)
+);

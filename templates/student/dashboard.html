@@ -1,105 +1,309 @@
 {% extends "base.html" %}
 
-{% block title %}Student Dashboard - EduManage{% endblock %}
+{% block title %}Student Portal - EduManage{% endblock %}
 
 {% block content %}
-<div class="row mb-4 align-items-center">
-    <div class="col-md-8">
-        <h3 class="fw-bold mb-1 text-primary">Welcome, {{ student.name }}!</h3>
-        <p class="text-muted mb-0">
-            Roll No: <strong>{{ student.roll_no }}</strong> | Department: <strong>{{ student.department }}</strong> | Semester: <strong>{{ student.semester }}</strong>
-        </p>
-    </div>
-    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <a href="{{ url_for('student_attendance') }}" class="btn btn-outline-primary me-2"><i class="fa-solid fa-calendar-check me-1"></i> Attendance</a>
-        <a href="{{ url_for('student_marks') }}" class="btn btn-primary"><i class="fa-solid fa-chart-line me-1"></i> My Marks</a>
-    </div>
-</div>
+<div class="app-container pb-5">
 
-<!-- Metrics Row -->
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card card-custom stat-card {% if attendance_pct >= 75 %}stat-green{% else %}stat-red{% endif %}">
-            <div class="stat-label">Overall Attendance</div>
-            <div class="stat-value {% if attendance_pct >= 75 %}text-success{% else %}text-danger{% endif %}">
-                {{ attendance_pct }}%
+    <!-- Top Profile Header (Matching Linways/Etlab UI in Image) -->
+    <div class="student-hero-card mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center text-primary fw-bold" style="width: 54px; height: 54px; font-size: 1.4rem;">
+                    {{ student.name[0] }}
+                </div>
+                <div>
+                    <h5 class="student-name-title mb-0">{{ student.name }}</h5>
+                    <div class="student-meta-text">Roll No: {{ student.roll_no }}</div>
+                </div>
             </div>
-            <small class="text-muted">Attended {{ attended }} of {{ total_classes }} sessions</small>
-            <div class="progress mt-2" style="height: 6px;">
-                <div class="progress-bar {% if attendance_pct >= 75 %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ attendance_pct }}%;"></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-custom stat-card stat-orange">
-            <div class="stat-label">Registered Semester</div>
-            <div class="stat-value text-dark">Semester {{ student.semester }}</div>
-            <small class="text-muted">{{ student.department }}</small>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-custom stat-card">
-            <div class="stat-label">Recent College Notices</div>
-            <div class="stat-value text-primary">{{ notices|length }}</div>
-            <small class="text-muted">Active broadcasts on server</small>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4">
-    <!-- Today's Schedule -->
-    <div class="col-lg-6">
-        <div class="card card-custom h-100">
-            <div class="card-header-custom">
-                <span><i class="fa-solid fa-clock me-2"></i>Today's Class Schedule ({{ today_name }})</span>
-                <a href="{{ url_for('student_timetable') }}" class="small text-decoration-none">Full Timetable &rarr;</a>
-            </div>
-            <div class="card-body p-0">
-                {% if today_timetable %}
-                    <div class="list-group list-group-flush">
-                        {% for slot in today_timetable %}
-                            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                <div>
-                                    <h6 class="mb-1 fw-bold text-dark">{{ slot.subject_code }}: {{ slot.subject_name }}</h6>
-                                    <small class="text-muted"><i class="fa-solid fa-chalkboard-user me-1"></i>{{ slot.faculty_name }} | <i class="fa-solid fa-door-open me-1"></i>{{ slot.classroom }}</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill px-3 py-2">{{ slot.time_slot }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="p-4 text-center text-muted">
-                        <i class="fa-solid fa-couch fa-2x mb-2 text-secondary"></i>
-                        <p class="mb-0">No classes scheduled for today.</p>
-                    </div>
+            <a href="{{ url_for('student_notices') }}" class="btn btn-light rounded-circle text-primary position-relative p-2" title="Notifications">
+                <i class="fa-regular fa-bell fa-lg"></i>
+                {% if notices %}
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                 {% endif %}
+            </a>
+        </div>
+
+        <div class="ps-1">
+            <div class="student-meta-text">{{ student.department }}-2023</div>
+            <div class="student-submeta fw-semibold">VIIth Semester</div>
+            <div class="mt-2 text-primary small d-flex align-items-center gap-2">
+                <span class="spinner-grow spinner-grow-sm text-primary" style="width: 10px; height: 10px;" role="status"></span>
+                <span class="fw-semibold">
+                    {% if today_timetable %}
+                        Next: {{ today_timetable[0].subject_code }} ({{ today_timetable[0].time_slot }}) @ {{ today_timetable[0].classroom }}
+                    {% else %}
+                        Timetable: No scheduled lectures today
+                    {% endif %}
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Recent Notices -->
-    <div class="col-lg-6">
-        <div class="card card-custom h-100">
-            <div class="card-header-custom">
-                <span><i class="fa-solid fa-bullhorn me-2"></i>Campus Announcements</span>
-                <a href="{{ url_for('student_notices') }}" class="small text-decoration-none">View All &rarr;</a>
+    <!-- Mission & Vision Buttons -->
+    <div class="d-flex gap-2 mb-3">
+        <button class="pill-btn-mission flex-grow-1" data-bs-toggle="modal" data-bs-target="#missionModal">
+            <i class="fa-solid fa-flag me-1"></i> Mission
+        </button>
+        <button class="pill-btn-vision flex-grow-1" data-bs-toggle="modal" data-bs-target="#visionModal">
+            <i class="fa-solid fa-eye me-1"></i> Vision
+        </button>
+    </div>
+
+    <!-- CGPA & Attendance Metrics Row (Matching Image 1) -->
+    <div class="row g-2 mb-3">
+        <!-- CGPA Gradient Card -->
+        <div class="col-7">
+            <div class="cgpa-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="cgpa-title">CGPA</span>
+                    <i class="fa-solid fa-arrow-trend-up fa-lg opacity-75"></i>
+                </div>
+                <div class="cgpa-val">{{ cgpa }}</div>
+                <div class="cgpa-stat-line">
+                    <span><i class="fa-solid fa-circle-check text-info me-1"></i>Earned Credit</span>
+                    <span class="fw-bold">{{ earned_credits }}</span>
+                </div>
+                <div class="cgpa-stat-line">
+                    <span><i class="fa-solid fa-circle-check text-success me-1"></i>Passed</span>
+                    <span class="fw-bold">{{ passed }}</span>
+                </div>
+                <div class="cgpa-stat-line">
+                    <span><i class="fa-solid fa-circle-xmark text-danger me-1"></i>Failed</span>
+                    <span class="fw-bold">{{ failed }}</span>
+                </div>
             </div>
-            <div class="card-body">
-                {% for notice in notices %}
-                    <div class="notice-item">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0 fw-bold text-primary">{{ notice.title }}</h6>
-                            <span class="badge bg-secondary">{{ notice.category }}</span>
-                        </div>
-                        <p class="text-dark small mb-1">{{ notice.message }}</p>
-                        <small class="text-muted"><i class="fa-solid fa-user-pen me-1"></i>{{ notice.author }} &bull; {{ notice.created_at[:10] }}</small>
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center py-4">No recent notices available.</p>
-                {% endfor %}
+        </div>
+
+        <!-- Attendance Meter Card -->
+        <div class="col-5">
+            <div class="attendance-circle-card">
+                <div class="circular-meter" style="--pct: {{ attendance_pct }};">
+                    <span class="circular-meter-text {% if attendance_pct >= 75 %}good{% endif %}">
+                        {{ attendance_pct }}%
+                    </span>
+                </div>
+                <div class="attendance-label">Attendance</div>
+                <div class="d-flex gap-2 mt-2">
+                    <span class="badge bg-light text-secondary border px-2 py-1"><i class="fa-solid fa-table-cells"></i></span>
+                    <span class="badge bg-light text-secondary border px-2 py-1"><i class="fa-solid fa-bars"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fee Due Alert Banner (if pending) -->
+    {% if fee_due and fee_due['count'] > 0 %}
+        <div class="alert alert-warning py-2 px-3 rounded-4 d-flex align-items-center justify-content-between mb-3 shadow-sm border-0">
+            <div class="small">
+                <i class="fa-solid fa-circle-exclamation me-1 text-danger"></i>
+                <strong>{{ fee_due['count'] }} Fee Demand(s) Pending:</strong> ₹{{ fee_due['total'] }}
+            </div>
+            <a href="{{ url_for('student_fees') }}" class="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-semibold small">Pay Now</a>
+        </div>
+    {% endif %}
+
+    <!-- Filter Pills / Tabs (Matching Image 1) -->
+    <div class="d-flex gap-2 mb-3 overflow-x-auto py-1">
+        <span class="filter-pill active" onclick="filterTiles('all')">All</span>
+        <span class="filter-pill" onclick="filterTiles('academic')">Information</span>
+        <span class="filter-pill" onclick="filterTiles('office')">Office</span>
+        <span class="filter-pill" onclick="filterTiles('placement')">Placement</span>
+    </div>
+
+    <!-- 12 App Card Tiles (Matching Exact App Icons and Colors from Images) -->
+    <div class="row g-3" id="tilesContainer">
+
+        <!-- 1. Evaluations -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_marks') }}" class="app-tile tile-evaluations">
+                <i class="fa-solid fa-newspaper app-tile-icon"></i>
+                <span class="app-tile-title">Evaluations</span>
+            </a>
+        </div>
+
+        <!-- 2. Results -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_marks') }}" class="app-tile tile-results">
+                <i class="fa-solid fa-graduation-cap app-tile-icon"></i>
+                <span class="app-tile-title">Results</span>
+            </a>
+        </div>
+
+        <!-- 3. Study Materials -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_materials') }}" class="app-tile tile-materials">
+                <i class="fa-solid fa-book-bookmark app-tile-icon"></i>
+                <span class="app-tile-title">Study Materials</span>
+            </a>
+        </div>
+
+        <!-- 4. Courses -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_courses') }}" class="app-tile tile-courses">
+                <i class="fa-solid fa-book-open app-tile-icon"></i>
+                <span class="app-tile-title">Courses</span>
+            </a>
+        </div>
+
+        <!-- 5. Faculties -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_faculties') }}" class="app-tile tile-faculties">
+                <i class="fa-solid fa-comment-dots app-tile-icon"></i>
+                <span class="app-tile-title">Faculties</span>
+            </a>
+        </div>
+
+        <!-- 6. Question Bank -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_materials', type='Question Bank') }}" class="app-tile tile-qbank">
+                <i class="fa-solid fa-circle-question app-tile-icon"></i>
+                <span class="app-tile-title">Question Bank</span>
+            </a>
+        </div>
+
+        <!-- 7. Analysis -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_analysis') }}" class="app-tile tile-analysis">
+                <i class="fa-solid fa-chart-simple app-tile-icon"></i>
+                <span class="app-tile-title">Analysis</span>
+            </a>
+        </div>
+
+        <!-- 8. Laboratory -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_lab') }}" class="app-tile tile-laboratory">
+                <i class="fa-solid fa-flask-vial app-tile-icon"></i>
+                <span class="app-tile-title">Laboratory</span>
+            </a>
+        </div>
+
+        <!-- 9. Exam Schedule -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_timetable') }}" class="app-tile tile-examschedule">
+                <i class="fa-solid fa-calendar-check app-tile-icon"></i>
+                <span class="app-tile-title">Exam Schedule</span>
+            </a>
+        </div>
+
+        <!-- 10. Exam Or Quiz -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_quiz') }}" class="app-tile tile-quiz">
+                <i class="fa-solid fa-circle-question app-tile-icon"></i>
+                <span class="app-tile-title">Exam Or Quiz</span>
+            </a>
+        </div>
+
+        <!-- 11. Video Lectures -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_videos') }}" class="app-tile tile-video">
+                <i class="fa-solid fa-circle-play app-tile-icon"></i>
+                <span class="app-tile-title">Video Lectures</span>
+            </a>
+        </div>
+
+        <!-- 12. University Exam -->
+        <div class="col-4 tile-item tile-academic">
+            <a href="{{ url_for('student_university_exam') }}" class="app-tile tile-univ">
+                <i class="fa-solid fa-award app-tile-icon"></i>
+                <span class="app-tile-title">University Exam</span>
+            </a>
+        </div>
+
+        <!-- Extra: Fee Payment (Office) -->
+        <div class="col-4 tile-item tile-office">
+            <a href="{{ url_for('student_fees') }}" class="app-tile tile-fees">
+                <i class="fa-solid fa-receipt app-tile-icon"></i>
+                <span class="app-tile-title">Fee Payment</span>
+            </a>
+        </div>
+
+        <!-- Extra: Assignments (Academic / Office) -->
+        <div class="col-4 tile-item tile-academic tile-office">
+            <a href="{{ url_for('student_assignments') }}" class="app-tile tile-materials">
+                <i class="fa-solid fa-pen-ruler app-tile-icon"></i>
+                <span class="app-tile-title">Assignments</span>
+            </a>
+        </div>
+
+        <!-- Extra: Placement Portal (Placement) -->
+        <div class="col-4 tile-item tile-placement">
+            <a href="{{ url_for('student_notices') }}" class="app-tile tile-results">
+                <i class="fa-solid fa-briefcase app-tile-icon"></i>
+                <span class="app-tile-title">Placement</span>
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Mission Modal -->
+<div class="modal fade" id="missionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-flag me-2"></i>Institutional Mission</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-muted small">
+                <p>1. To impart high-quality education in Electronics and Communication Engineering through state-of-the-art laboratory infrastructure and innovative pedagogical methods.</p>
+                <p>2. To foster interdisciplinary research, ethical leadership, and continuous learning to meet global technological demands.</p>
+                <p class="mb-0">3. To collaborate with industry leaders and research institutions to nurture entrepreneurship and socio-technical problem solving.</p>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
+<!-- Vision Modal -->
+<div class="modal fade" id="visionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-dark text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-eye me-2"></i>Institutional Vision</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-muted small">
+                <p class="mb-0">To emerge as a centre of academic excellence in engineering education and research, producing globally competent, socially responsible, and innovative engineers capable of solving complex technological challenges.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fixed Floating Mobile App Navigation Bar (Matching Image 1 & 2 Bottom Bar) -->
+<div class="bottom-app-bar">
+    <a href="{{ url_for('student_dashboard') }}" class="bottom-tab-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ url_for('student_notices') }}" class="bottom-tab-item">
+        <i class="fa-solid fa-chalkboard"></i>
+        <span>Notice Board</span>
+    </a>
+    <a href="{{ url_for('student_assignments') }}" class="bottom-tab-item">
+        <i class="fa-solid fa-handshake-angle"></i>
+        <span>Assignments</span>
+    </a>
+    <a href="{{ url_for('profile') }}" class="bottom-tab-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Profile</span>
+    </a>
+</div>
+
+<script>
+function filterTiles(category) {
+    document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const items = document.querySelectorAll('.tile-item');
+    items.forEach(item => {
+        if (category === 'all' || item.classList.contains('tile-' + category)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

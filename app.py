@@ -174,6 +174,27 @@ def student_dashboard():
         ORDER BY t.time_slot ASC
     ''', (student['department'], student['semester'], today_name))
 
+    # Fee status summary
+    fee_due = query_db('''
+        SELECT COUNT(*) as count, SUM(amount) as total
+        FROM fees
+        WHERE student_id = ? AND status IN ('Pending', 'Rejected')
+    ''', (student['id'],), one=True)
+
+    # Assignments count
+    pending_assignments = query_db('''
+        SELECT COUNT(*) as count FROM assignments a
+        JOIN subjects s ON a.subject_id = s.id
+        WHERE s.department = ? AND s.semester = ?
+          AND a.id NOT IN (SELECT assignment_id FROM assignment_submissions WHERE student_id = ?)
+    ''', (student['department'], student['semester'], student['id']), one=True)['count']
+
+    materials_count = query_db('''
+        SELECT COUNT(*) as count FROM study_materials m
+        JOIN subjects s ON m.subject_id = s.id
+        WHERE s.department = ? AND s.semester = ?
+    ''', (student['department'], student['semester']), one=True)['count']
+
     return render_template('student/dashboard.html', 
                            student=student, 
                            attendance_pct=attendance_pct,
@@ -182,7 +203,14 @@ def student_dashboard():
                            recent_marks=recent_marks,
                            notices=notices,
                            today_timetable=today_timetable,
-                           today_name=today_name)
+                           today_name=today_name,
+                           fee_due=fee_due,
+                           pending_assignments=pending_assignments,
+                           materials_count=materials_count,
+                           cgpa=8.42,
+                           earned_credits=24,
+                           passed=6,
+                           failed=0)
 
 @app.route('/student/attendance')
 @role_required('student')
@@ -259,6 +287,216 @@ def student_notices():
         ORDER BY n.created_at DESC
     ''')
     return render_template('student/notices.html', notices=notices)
+
+# ---------------------------------------------------------
+# STUDENT EXTENSIONS (Fees, Materials, Assignments & Visual Modules)
+# ---------------------------------------------------------
+@app.route('/student/fees')
+@role_required('student')
+def student_fees():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    fees_list = query_db('''
+        SELECT f.*, fac.name as verifier_name
+        FROM fees f
+        LEFT JOIN faculty fac ON f.verified_by_faculty_id = fac.id
+        WHERE f.student_id = ?
+        ORDER BY f.due_date ASC
+    ''', (student['id'],))
+    total_due = sum(f['amount'] for f in fees_list if f['status'] in ('Pending', 'Rejected'))
+    total_paid = sum(f['amount'] for f in fees_list if f['status'] in ('Paid', 'Verified'))
+    return render_template('student/fees.html', student=student, fees=fees_list, total_due=total_due, total_paid=total_paid)
+
+@app.route('/student/fees/pay/<int:fee_id>', methods=['POST'])
+@role_required('student')
+def student_fee_pay(fee_id):
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    fee = query_db('SELECT * FROM fees WHERE id = ? AND student_id = ?', (fee_id, student['id']), one=True)
+    if not fee:
+        flash('Fee record not found.', 'danger')
+        return redirect(url_for('student_fees'))
+    
+    payment_method = request.form.get('payment_method')
+    transaction_ref = request.form.get('transaction_ref', '').strip()
+    remarks = request.form.get('remarks', '').strip()
+
+    if not payment_method or not transaction_ref:
+        flash('Payment mode and Transaction Reference (UTR / DD number) are required.', 'danger')
+    else:
+        execute_db('''
+            UPDATE fees 
+            SET status = 'Paid',
+                payment_method = ?,
+                transaction_ref = ?,
+                paid_at = CURRENT_TIMESTAMP,
+                remarks = ?
+            WHERE id = ?
+        ''', (payment_method, transaction_ref, remarks, fee_id))
+        flash(f"Payment details for '{fee['fee_type']}' submitted successfully! Awaiting teacher verification.", 'success')
+    return redirect(url_for('student_fees'))
+
+@app.route('/student/fees/receipt/<int:fee_id>')
+@role_required('student')
+def student_fee_receipt(fee_id):
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    fee = query_db('''
+        SELECT f.*, fac.name as verifier_name, fac.designation as verifier_desig
+        FROM fees f
+        LEFT JOIN faculty fac ON f.verified_by_faculty_id = fac.id
+        WHERE f.id = ? AND f.student_id = ?
+    ''', (fee_id, student['id']), one=True)
+    if not fee:
+        flash('Receipt not available.', 'danger')
+        return redirect(url_for('student_fees'))
+    return render_template('student/fee_receipt.html', student=student, fee=fee)
+
+@app.route('/student/materials')
+@role_required('student')
+def student_materials():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    mat_type = request.args.get('type')
+    subj_filter = request.args.get('subject_id', type=int)
+
+    query = '''
+        SELECT m.*, s.subject_code, s.subject_name, f.name as faculty_name
+        FROM study_materials m
+        JOIN subjects s ON m.subject_id = s.id
+        JOIN faculty f ON m.faculty_id = f.id
+        WHERE s.department = ? AND s.semester = ?
+    '''
+    params = [student['department'], student['semester']]
+
+    if mat_type:
+        query += ' AND m.material_type = ?'
+        params.append(mat_type)
+    if subj_filter:
+        query += ' AND s.id = ?'
+        params.append(subj_filter)
+
+    query += ' ORDER BY m.uploaded_at DESC'
+    materials = query_db(query, params)
+    subjects = query_db('SELECT id, subject_code, subject_name FROM subjects WHERE department = ? AND semester = ?',
+                        (student['department'], student['semester']))
+
+    return render_template('student/materials.html', student=student, materials=materials, subjects=subjects, current_type=mat_type)
+
+@app.route('/student/assignments')
+@role_required('student')
+def student_assignments():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    assignments = query_db('''
+        SELECT a.*, s.subject_code, s.subject_name, f.name as faculty_name,
+               sub.submission_text, sub.submitted_at, sub.marks_awarded, sub.feedback,
+               COALESCE(sub.status, 'Pending') as my_status
+        FROM assignments a
+        JOIN subjects s ON a.subject_id = s.id
+        JOIN faculty f ON a.faculty_id = f.id
+        LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id AND sub.student_id = ?
+        WHERE s.department = ? AND s.semester = ?
+        ORDER BY a.due_date ASC
+    ''', (student['id'], student['department'], student['semester']))
+    return render_template('student/assignments.html', student=student, assignments=assignments)
+
+@app.route('/student/assignments/submit/<int:assignment_id>', methods=['POST'])
+@role_required('student')
+def student_assignment_submit(assignment_id):
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    submission_text = request.form.get('submission_text', '').strip()
+    if not submission_text:
+        flash('Please enter your submission text or summary before submitting.', 'danger')
+    else:
+        execute_db('''
+            INSERT OR REPLACE INTO assignment_submissions 
+            (assignment_id, student_id, submission_text, submitted_at, status)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'Submitted')
+        ''', (assignment_id, student['id'], submission_text))
+        flash('Assignment submitted successfully to faculty!', 'success')
+    return redirect(url_for('student_assignments'))
+
+@app.route('/student/courses')
+@role_required('student')
+def student_courses():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    courses = query_db('''
+        SELECT s.*, f.name as faculty_name, f.designation
+        FROM subjects s
+        LEFT JOIN faculty f ON s.faculty_id = f.id
+        WHERE s.department = ? AND s.semester = ?
+    ''', (student['department'], student['semester']))
+    return render_template('student/courses.html', student=student, courses=courses)
+
+@app.route('/student/faculties')
+@role_required('student')
+def student_faculties():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    faculties = query_db('''
+        SELECT f.*, u.email
+        FROM faculty f
+        JOIN users u ON f.user_id = u.id
+        WHERE f.department = ?
+    ''', (student['department'],))
+    return render_template('student/faculties.html', student=student, faculties=faculties)
+
+@app.route('/student/analysis')
+@role_required('student')
+def student_analysis():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    subject_attendance = query_db('''
+        SELECT s.subject_code, s.subject_name,
+               COUNT(a.id) as total_conducted,
+               SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) as attended
+        FROM subjects s
+        LEFT JOIN attendance a ON s.id = a.subject_id AND a.student_id = ?
+        WHERE s.department = ? AND s.semester = ?
+        GROUP BY s.id
+    ''', (student['id'], student['department'], student['semester']))
+    marks_list = query_db('''
+        SELECT m.*, s.subject_code
+        FROM marks m
+        JOIN subjects s ON m.subject_id = s.id
+        WHERE m.student_id = ?
+    ''', (student['id'],))
+    return render_template('student/analysis.html', student=student, subject_attendance=subject_attendance, marks_list=marks_list)
+
+@app.route('/student/lab')
+@role_required('student')
+def student_lab():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    lab_materials = query_db('''
+        SELECT m.*, s.subject_code, s.subject_name
+        FROM study_materials m
+        JOIN subjects s ON m.subject_id = s.id
+        WHERE s.department = ? AND (m.material_type = 'Lab Manual' OR s.subject_name LIKE '%Lab%')
+    ''', (student['department'],))
+    return render_template('student/lab.html', student=student, lab_materials=lab_materials)
+
+@app.route('/student/quiz')
+@role_required('student')
+def student_quiz():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    return render_template('student/quiz.html', student=student)
+
+@app.route('/student/videos')
+@role_required('student')
+def student_videos():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    videos = query_db('''
+        SELECT m.*, s.subject_code, s.subject_name
+        FROM study_materials m
+        JOIN subjects s ON m.subject_id = s.id
+        WHERE s.department = ? AND (m.material_type = 'Video Lecture' OR m.file_url LIKE 'http%')
+    ''', (student['department'],))
+    return render_template('student/videos.html', student=student, videos=videos)
+
+@app.route('/student/university_exam')
+@role_required('student')
+def student_university_exam():
+    student = query_db('SELECT * FROM students WHERE user_id = ?', (session['user_id'],), one=True)
+    exam_fee = query_db('''
+        SELECT * FROM fees 
+        WHERE student_id = ? AND fee_type LIKE '%Exam%'
+        ORDER BY id DESC LIMIT 1
+    ''', (student['id'],), one=True)
+    return render_template('student/university_exam.html', student=student, exam_fee=exam_fee)
 
 # ---------------------------------------------------------
 # FACULTY ROUTES
@@ -456,6 +694,168 @@ def faculty_notices():
         ORDER BY n.created_at DESC
     ''')
     return render_template('faculty/notices.html', notices=notices)
+
+# ---------------------------------------------------------
+# FACULTY EXTENSIONS (Fee Verification, Notes Upload & Assignments)
+# ---------------------------------------------------------
+@app.route('/faculty/fees')
+@role_required('faculty')
+def faculty_fees():
+    faculty = query_db('SELECT * FROM faculty WHERE user_id = ?', (session['user_id'],), one=True)
+    filter_status = request.args.get('status')
+    
+    query = '''
+        SELECT f.*, s.roll_no, s.name as student_name, s.department, s.semester,
+               fac.name as verifier_name
+        FROM fees f
+        JOIN students s ON f.student_id = s.id
+        LEFT JOIN faculty fac ON f.verified_by_faculty_id = fac.id
+        WHERE s.department = ?
+    '''
+    params = [faculty['department']]
+
+    if filter_status:
+        query += ' AND f.status = ?'
+        params.append(filter_status)
+
+    query += ' ORDER BY CASE f.status WHEN "Paid" THEN 1 WHEN "Pending" THEN 2 ELSE 3 END, f.paid_at DESC'
+    fees_list = query_db(query, params)
+    return render_template('faculty/fees.html', faculty=faculty, fees=fees_list, current_status=filter_status)
+
+@app.route('/faculty/fees/verify/<int:fee_id>', methods=['POST'])
+@role_required('faculty')
+def faculty_fee_verify(fee_id):
+    faculty = query_db('SELECT * FROM faculty WHERE user_id = ?', (session['user_id'],), one=True)
+    decision = request.form.get('decision') # 'Verified' or 'Rejected'
+    remarks = request.form.get('remarks', '').strip()
+
+    if decision not in ('Verified', 'Rejected'):
+        flash('Invalid verification action.', 'danger')
+    else:
+        execute_db('''
+            UPDATE fees
+            SET status = ?,
+                verified_by_faculty_id = ?,
+                verified_at = CURRENT_TIMESTAMP,
+                remarks = ?
+            WHERE id = ?
+        ''', (decision, faculty['id'], remarks, fee_id))
+        flash(f"Student fee status updated to '{decision}' successfully!", 'success')
+
+    return redirect(url_for('faculty_fees'))
+
+@app.route('/faculty/materials', methods=['GET', 'POST'])
+@role_required('faculty')
+def faculty_materials():
+    faculty = query_db('SELECT * FROM faculty WHERE user_id = ?', (session['user_id'],), one=True)
+    assigned_subjects = query_db('SELECT * FROM subjects WHERE faculty_id = ?', (faculty['id'],))
+
+    if request.method == 'POST':
+        subj_id = request.form.get('subject_id', type=int)
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
+        material_type = request.form.get('material_type', 'Lecture Notes')
+        file_url = request.form.get('file_url', '').strip() or '#'
+
+        if not (subj_id and title):
+            flash('Subject and Material Title are required.', 'danger')
+        else:
+            execute_db('''
+                INSERT INTO study_materials (subject_id, faculty_id, title, description, material_type, file_name, file_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (subj_id, faculty['id'], title, description, material_type, title, file_url))
+            flash(f"Study Material / Notes '{title}' uploaded successfully!", 'success')
+            return redirect(url_for('faculty_materials'))
+
+    materials = query_db('''
+        SELECT m.*, s.subject_code, s.subject_name
+        FROM study_materials m
+        JOIN subjects s ON m.subject_id = s.id
+        WHERE m.faculty_id = ?
+        ORDER BY m.uploaded_at DESC
+    ''', (faculty['id'],))
+
+    return render_template('faculty/materials.html', faculty=faculty, assigned_subjects=assigned_subjects, materials=materials)
+
+@app.route('/faculty/materials/delete/<int:material_id>', methods=['POST'])
+@role_required('faculty')
+def faculty_material_delete(material_id):
+    faculty = query_db('SELECT * FROM faculty WHERE user_id = ?', (session['user_id'],), one=True)
+    execute_db('DELETE FROM study_materials WHERE id = ? AND faculty_id = ?', (material_id, faculty['id']))
+    flash('Material removed.', 'info')
+    return redirect(url_for('faculty_materials'))
+
+@app.route('/faculty/assignments', methods=['GET', 'POST'])
+@role_required('faculty')
+def faculty_assignments():
+    faculty = query_db('SELECT * FROM faculty WHERE user_id = ?', (session['user_id'],), one=True)
+    assigned_subjects = query_db('SELECT * FROM subjects WHERE faculty_id = ?', (faculty['id'],))
+
+    if request.method == 'POST':
+        subj_id = request.form.get('subject_id', type=int)
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
+        due_date = request.form.get('due_date')
+        max_marks = float(request.form.get('max_marks', 20.0))
+
+        if not (subj_id and title and due_date):
+            flash('All assignment details are required.', 'danger')
+        else:
+            execute_db('''
+                INSERT INTO assignments (subject_id, faculty_id, title, description, due_date, max_marks)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (subj_id, faculty['id'], title, description, due_date, max_marks))
+            flash(f"Assignment '{title}' published for students!", 'success')
+            return redirect(url_for('faculty_assignments'))
+
+    assignments = query_db('''
+        SELECT a.*, s.subject_code, s.subject_name,
+               (SELECT COUNT(*) FROM assignment_submissions WHERE assignment_id = a.id) as submission_count
+        FROM assignments a
+        JOIN subjects s ON a.subject_id = s.id
+        WHERE a.faculty_id = ?
+        ORDER BY a.created_at DESC
+    ''', (faculty['id'],))
+
+    return render_template('faculty/assignments.html', faculty=faculty, assigned_subjects=assigned_subjects, assignments=assignments)
+
+@app.route('/faculty/assignments/<int:assignment_id>/submissions', methods=['GET', 'POST'])
+@role_required('faculty')
+def faculty_assignment_submissions(assignment_id):
+    faculty = query_db('SELECT * FROM faculty WHERE user_id = ?', (session['user_id'],), one=True)
+    assignment = query_db('''
+        SELECT a.*, s.subject_code, s.subject_name, s.department, s.semester
+        FROM assignments a
+        JOIN subjects s ON a.subject_id = s.id
+        WHERE a.id = ? AND a.faculty_id = ?
+    ''', (assignment_id, faculty['id']), one=True)
+
+    if not assignment:
+        flash('Assignment not found or unauthorized.', 'danger')
+        return redirect(url_for('faculty_assignments'))
+
+    if request.method == 'POST':
+        sub_id = request.form.get('submission_id', type=int)
+        marks = float(request.form.get('marks_awarded', 0.0))
+        feedback = request.form.get('feedback', '').strip()
+
+        execute_db('''
+            UPDATE assignment_submissions
+            SET marks_awarded = ?, feedback = ?, status = 'Evaluated'
+            WHERE id = ? AND assignment_id = ?
+        ''', (marks, feedback, sub_id, assignment_id))
+        flash('Marks and feedback recorded successfully!', 'success')
+        return redirect(url_for('faculty_assignment_submissions', assignment_id=assignment_id))
+
+    submissions = query_db('''
+        SELECT sub.*, st.roll_no, st.name as student_name
+        FROM assignment_submissions sub
+        JOIN students st ON sub.student_id = st.id
+        WHERE sub.assignment_id = ?
+        ORDER BY st.roll_no ASC
+    ''', (assignment_id,))
+
+    return render_template('faculty/assignment_submissions.html', faculty=faculty, assignment=assignment, submissions=submissions)
 
 # ---------------------------------------------------------
 # PARENT ROUTES (Strict Linkage Enforcement)
@@ -868,6 +1268,66 @@ def admin_reports():
                            dept_summary=dept_summary,
                            attendance_report=attendance_report,
                            marks_report=marks_report)
+
+# ---------------------------------------------------------
+# ADMIN EXTENSIONS (Fee Demands & Collections)
+# ---------------------------------------------------------
+@app.route('/admin/fees', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_fees():
+    if request.method == 'POST':
+        fee_type = request.form.get('fee_type', '').strip()
+        amount = float(request.form.get('amount', 0.0))
+        due_date = request.form.get('due_date')
+        target = request.form.get('target', 'all')
+
+        if not (fee_type and amount > 0 and due_date):
+            flash('Valid fee type, amount, and due date are required.', 'danger')
+        else:
+            if target == 'all':
+                students = query_db('SELECT id FROM students')
+                for st in students:
+                    execute_db('''
+                        INSERT INTO fees (student_id, fee_type, amount, due_date, status)
+                        VALUES (?, ?, ?, ?, 'Pending')
+                    ''', (st['id'], fee_type, amount, due_date))
+                flash(f"Fee demand '{fee_type}' created for all {len(students)} students!", 'success')
+            else:
+                execute_db('''
+                    INSERT INTO fees (student_id, fee_type, amount, due_date, status)
+                    VALUES (?, ?, ?, ?, 'Pending')
+                ''', (int(target), fee_type, amount, due_date))
+                flash(f"Fee demand '{fee_type}' assigned to selected student.", 'success')
+
+        return redirect(url_for('admin_fees'))
+
+    fees_list = query_db('''
+        SELECT f.*, s.roll_no, s.name as student_name, s.department, s.semester,
+               fac.name as verifier_name
+        FROM fees f
+        JOIN students s ON f.student_id = s.id
+        LEFT JOIN faculty fac ON f.verified_by_faculty_id = fac.id
+        ORDER BY f.id DESC
+    ''')
+
+    total_amount = sum(f['amount'] for f in fees_list)
+    verified_amount = sum(f['amount'] for f in fees_list if f['status'] == 'Verified')
+    pending_amount = sum(f['amount'] for f in fees_list if f['status'] in ('Pending', 'Paid'))
+    students = query_db('SELECT id, roll_no, name FROM students ORDER BY roll_no')
+
+    return render_template('admin/fees.html', 
+                           fees_list=fees_list, 
+                           total_amount=total_amount,
+                           verified_amount=verified_amount,
+                           pending_amount=pending_amount,
+                           students=students)
+
+@app.route('/admin/fees/delete/<int:fee_id>', methods=['POST'])
+@role_required('admin')
+def admin_fee_delete(fee_id):
+    execute_db('DELETE FROM fees WHERE id = ?', (fee_id,))
+    flash('Fee demand record deleted.', 'info')
+    return redirect(url_for('admin_fees'))
 
 # ---------------------------------------------------------
 # ERROR HANDLERS (Friendly & Informative)

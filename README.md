@@ -28,9 +28,11 @@ For quick testing during viva and project demonstrations, the login portal inclu
 | **Administrator** | `admin` | `admin123` | Principal / Admin Office |
 | **Faculty 1** | `prof_smith` | `faculty123` | Dr. John Smith (Computer Networks) |
 | **Faculty 2** | `prof_anjali` | `faculty123` | Prof. Anjali Nair (Wireless Comm.) |
-| **Student 1** | `adwaith` | `student123` | Adwaith R. (S7 ECE, Roll: ECE2101) |
-| **Student 2** | `sneha` | `student123` | Sneha Patel (S7 ECE, Roll: ECE2102) |
-| **Student 3** | `rahul` | `student123` | Rahul Kumar (S7 ECE, Roll: ECE2103) |
+| **Student (Roll 22)** | `alan` | `student123` | Alan Jaison (S7 ECE, Roll: 22) |
+| **Student (Roll 18)** | `adwaith` | `student123` | Adwaith Krishna R (S7 ECE, Roll: 18) |
+| **Student (Roll 58)** | `devanarayanan` | `student123` | Devanarayanan (S7 ECE, Roll: 58) |
+| **Student (Roll 48)** | `aswin` | `student123` | Aswin krishna (S7 ECE, Roll: 48) |
+| **Student (Roll 19)** | `agesh` | `student123` | Agesh (S7 ECE, Roll: 19) |
 | **Parent** | `parent_adwaith`| `parent123` | Mr. Radhakrishnan (Linked to Adwaith) |
 
 ---
@@ -147,8 +149,10 @@ OK
 +------------------------------------------------------------------------+
 |                       CENTRAL SQLITE DATABASE                          |
 |                             college.db                                 |
-|  [users]      [students]     [faculty]    [parent_student] [subjects]  |
-|  [attendance] [marks]        [timetable]  [notices]                    |
+|  [users]      [students]        [faculty]         [parent_student]     |
+|  [subjects]   [attendance]      [marks]           [timetable]          |
+|  [notices]    [fees]            [study_materials] [assignments]        |
+|  [assignment_submissions]                                              |
 +------------------------------------------------------------------------+
 ```
 

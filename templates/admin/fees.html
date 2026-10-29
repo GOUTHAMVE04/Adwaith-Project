@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Fee Management - Admin Console{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-money-check-dollar me-2"></i>Institutional Fee Administration</h3>
+        <p class="text-muted mb-0">Generate fee invoices, track collections, and monitor teacher verification</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createFeeDemandModal">
+        <i class="fa-solid fa-plus me-1"></i> Issue New Fee Demand
+    </button>
+</div>
+
+<!-- Financial Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom stat-card">
+            <div class="stat-label">Total Invoiced Amount</div>
+            <div class="stat-value text-primary">₹{{ total_amount }}</div>
+            <small class="text-muted">Total fee demands generated</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom stat-card stat-green">
+            <div class="stat-label">Verified & Realized</div>
+            <div class="stat-value text-success">₹{{ verified_amount }}</div>
+            <small class="text-muted">Verified by departmental faculty</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom stat-card stat-red">
+            <div class="stat-label">Pending Collection</div>
+            <div class="stat-value text-danger">₹{{ pending_amount }}</div>
+            <small class="text-muted">Outstanding student balances</small>
+        </div>
+    </div>
+</div>
+
+<!-- All Fees List -->
+<div class="card card-custom">
+    <div class="card-header-custom">
+        <span><i class="fa-solid fa-file-invoice-dollar me-2"></i>Master Student Fee Ledger</span>
+        <span class="badge bg-primary">{{ fees_list|length }} Records</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Fee Particulars</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th class="text-center">Status</th>
+                        <th>Transaction UTR</th>
+                        <th>Verifier</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fees_list %}
+                        <tr>
+                            <td class="fw-bold">{{ f.roll_no }}</td>
+                            <td>{{ f.student_name }}</td>
+                            <td class="fw-semibold">{{ f.fee_type }}</td>
+                            <td class="fw-bold text-primary">₹{{ f.amount }}</td>
+                            <td>{{ f.due_date }}</td>
+                            <td class="text-center">
+                                {% if f.status == 'Verified' %}
+                                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1">Verified</span>
+                                {% elif f.status == 'Paid' %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-3 py-1">Paid (Pending Verify)</span>
+                                {% elif f.status == 'Rejected' %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-danger text-white px-3 py-1">Unpaid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if f.transaction_ref %}
+                                    <code>{{ f.transaction_ref }}</code>
+                                    <div class="small text-muted">{{ f.payment_method }}</div>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ f.verifier_name or '-' }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('admin_fee_delete', fee_id=f.id) }}" onsubmit="return confirm('Delete this fee demand?')" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Fee Demand">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">No fee demand records generated yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Issue Fee Demand -->
+<div class="modal fade" id="createFeeDemandModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-plus me-2"></i>Issue College Fee Demand</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin_fees') }}">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Target Student(s)</label>
+                        <select name="target" class="form-select" required>
+                            <option value="all" selected>All Enrolled Students (Generate for Whole College / Class)</option>
+                            {% for st in students %}
+                                <option value="{{ st.id }}">{{ st.name }} (Roll No: {{ st.roll_no }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Fee Particulars / Title</label>
+                        <input type="text" name="fee_type" class="form-control" placeholder="e.g. S7 Laboratory Fee or KTU Examination Fee" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Amount (INR)</label>
+                            <input type="number" step="100" min="50" name="amount" class="form-control" placeholder="e.g. 2500" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Due Date</label>
+                            <input type="date" name="due_date" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">
+                        <i class="fa-solid fa-bolt me-1"></i>Issue Fee Invoices
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

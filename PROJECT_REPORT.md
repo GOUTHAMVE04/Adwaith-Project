@@ -2,7 +2,7 @@
 ## Educational (College) Management System
 ### A Computer Network Based Client–Server Management System
 **Course:** ECT423 Computer Networks  
-**Student Name:** Adwaith R.  
+**Student Name:** Adwaith Krishna R  
 **Architecture:** Multi-Tier Client–Server Model over TCP/IP  
 
 ---
@@ -86,7 +86,7 @@ flowchart TD
 
 ## 4. Database Design & Entity-Relationship (ER) Diagram
 
-The central database consists of 9 normalized relational tables:
+The central database consists of 13 normalized relational tables:
 
 ```mermaid
 erDiagram
@@ -97,11 +97,19 @@ erDiagram
     STUDENTS ||--o{ PARENT_STUDENT : "linked to"
     STUDENTS ||--o{ ATTENDANCE : "has"
     STUDENTS ||--o{ MARKS : "awarded"
+    STUDENTS ||--o{ FEES : "billed to"
+    STUDENTS ||--o{ ASSIGNMENT_SUBMISSIONS : "submits"
     FACULTY ||--o{ SUBJECTS : "teaches"
     FACULTY ||--o{ TIMETABLE : "assigned"
+    FACULTY ||--o{ STUDY_MATERIALS : "uploads"
+    FACULTY ||--o{ ASSIGNMENTS : "creates"
+    FACULTY ||--o{ FEES : "verifies"
     SUBJECTS ||--o{ ATTENDANCE : "logged for"
     SUBJECTS ||--o{ MARKS : "evaluated for"
     SUBJECTS ||--o{ TIMETABLE : "scheduled in"
+    SUBJECTS ||--o{ STUDY_MATERIALS : "belongs to"
+    SUBJECTS ||--o{ ASSIGNMENTS : "assigned in"
+    ASSIGNMENTS ||--o{ ASSIGNMENT_SUBMISSIONS : "contains"
 
     USERS {
         int id PK
@@ -178,6 +186,53 @@ erDiagram
         string category
         int created_by_user_id FK
         timestamp created_at
+    }
+
+    FEES {
+        int id PK
+        int student_id FK
+        string fee_type
+        float amount
+        date due_date
+        string status
+        string transaction_ref
+        date paid_date
+        int verified_by_faculty_id FK
+        date verified_date
+    }
+
+    STUDY_MATERIALS {
+        int id PK
+        int subject_id FK
+        int uploaded_by_faculty_id FK
+        string title
+        string material_type
+        string file_url
+        string description
+        timestamp upload_date
+    }
+
+    ASSIGNMENTS {
+        int id PK
+        int subject_id FK
+        int created_by_faculty_id FK
+        string title
+        string description
+        date due_date
+        float max_marks
+        timestamp created_at
+    }
+
+    ASSIGNMENT_SUBMISSIONS {
+        int id PK
+        int assignment_id FK
+        int student_id FK
+        string submission_text
+        string attachment_url
+        timestamp submitted_at
+        float marks_obtained
+        string faculty_feedback
+        timestamp evaluated_at
     }
 ```
 

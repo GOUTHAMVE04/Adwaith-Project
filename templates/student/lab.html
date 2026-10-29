@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Laboratory Schedule & Manuals - EduManage{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-flask-vial me-2"></i>Laboratory Sessions & Practical Manuals</h3>
+    <p class="text-muted mb-0">Department of {{ student.department }} | Semester {{ student.semester }}</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-network-wired text-primary me-2"></i>Computer Networks & Systems Lab</h5>
+            <p class="text-muted small">Location: <strong>Networks Lab (Lab Block 2, Room 204)</strong></p>
+
+            <h6 class="fw-bold text-primary small text-uppercase mb-2">Prescribed Lab Experiments:</h6>
+            <div class="list-group list-group-flush small mb-3">
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>1. Implementation of Stop and Wait & Sliding Window Protocols in Python</span>
+                    <span class="badge bg-success-subtle text-success">Completed</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>2. Client-Server Socket Programming with TCP & UDP</span>
+                    <span class="badge bg-success-subtle text-success">Completed</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>3. Packet Sniffing & Protocol Header Inspection with Wireshark</span>
+                    <span class="badge bg-warning-subtle text-warning-emphasis">In Progress</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between">
+                    <span>4. Simulation of Distance Vector and Link State Routing Algorithms</span>
+                    <span class="badge bg-secondary-subtle text-secondary">Scheduled</span>
+                </div>
+            </div>
+            <a href="/static/uploads/Networks_Lab_Manual_S7.txt" class="btn btn-outline-primary btn-sm rounded-pill">
+                <i class="fa-solid fa-download me-1"></i>Download Lab Manual PDF
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-tower-broadcast text-success me-2"></i>Wireless & Microwave Lab</h5>
+            <p class="text-muted small">Location: <strong>Microwave Research Facility</strong></p>
+            <div class="alert alert-info small py-2">
+                <strong>Next Lab Batch:</strong> Tuesday 01:30 PM - 04:30 PM
+            </div>
+            <p class="small text-muted mb-3">Ensure your observation notebooks and pre-lab calculations are verified prior to starting hardware setups.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

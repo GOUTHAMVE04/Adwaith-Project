@@ -1,0 +1,21 @@
+================================================================
+APJ ABDUL KALAM TECHNOLOGICAL UNIVERSITY (KTU)
+DEPARTMENT OF ELECTRONICS & COMMUNICATION ENGINEERING
+ECT423 COMPUTER NETWORKS - QUESTION BANK (MODULES 1 TO 5)
+================================================================
+
+PART A (3 Marks Each):
+1. State the significance of encapsulation and decapsulation in layered protocol architecture.
+2. What is the role of ARP (Address Resolution Protocol)? How is cache poisoning mitigated?
+3. What is the difference between persistent and non-persistent HTTP?
+4. Explain flow control vs congestion control in TCP.
+5. What are the advantages of CIDR over classful IP addressing?
+
+PART B (14 Marks Each):
+6. (a) Explain distance vector routing and count-to-infinity problem with illustration.
+   (b) Describe Link State Routing algorithm (Dijkstra) with a sample network graph.
+7. (a) With neat sketches, explain the working of CSMA/CD and CSMA/CA.
+   (b) Discuss the functions of Application Layer protocols: DNS, DHCP, and HTTP.
+8. (a) Draw and explain TCP Segment Header in detail.
+   (b) Explain the slow-start and congestion avoidance phases in TCP Tahoe & Reno.
+

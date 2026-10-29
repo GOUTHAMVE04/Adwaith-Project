@@ -33,9 +33,11 @@ def init_database():
         ('admin', admin_pw, 'admin', 'Principal / Admin Office', 'admin@college.edu'),
         ('prof_smith', faculty_pw, 'faculty', 'Dr. John Smith', 'smith@college.edu'),
         ('prof_anjali', faculty_pw, 'faculty', 'Prof. Anjali Nair', 'anjali@college.edu'),
-        ('adwaith', student_pw, 'student', 'Adwaith R.', 'adwaith@student.college.edu'),
-        ('sneha', student_pw, 'student', 'Sneha Patel', 'sneha@student.college.edu'),
-        ('rahul', student_pw, 'student', 'Rahul Kumar', 'rahul@student.college.edu'),
+        ('alan', student_pw, 'student', 'Alan Jaison', 'alan@student.college.edu'),
+        ('adwaith', student_pw, 'student', 'Adwaith Krishna R', 'adwaith@student.college.edu'),
+        ('devanarayanan', student_pw, 'student', 'Devanarayanan', 'devanarayanan@student.college.edu'),
+        ('aswin', student_pw, 'student', 'Aswin krishna', 'aswin@student.college.edu'),
+        ('agesh', student_pw, 'student', 'Agesh', 'agesh@student.college.edu'),
         ('parent_adwaith', parent_pw, 'parent', 'Mr. Radhakrishnan (Parent of Adwaith)', 'radhakrishnan@gmail.com')
     ]
     cursor.executemany(
@@ -61,9 +63,11 @@ def init_database():
 
     # 3. Insert Student Profiles
     students_data = [
-        ('ECE2101', 'Adwaith R.', 'Electronics & Communication', 7, user_map['adwaith']),
-        ('ECE2102', 'Sneha Patel', 'Electronics & Communication', 7, user_map['sneha']),
-        ('ECE2103', 'Rahul Kumar', 'Electronics & Communication', 7, user_map['rahul'])
+        ('22', 'Alan Jaison', 'Electronics & Communication', 7, user_map['alan']),
+        ('18', 'Adwaith Krishna R', 'Electronics & Communication', 7, user_map['adwaith']),
+        ('58', 'Devanarayanan', 'Electronics & Communication', 7, user_map['devanarayanan']),
+        ('48', 'Aswin krishna', 'Electronics & Communication', 7, user_map['aswin']),
+        ('19', 'Agesh', 'Electronics & Communication', 7, user_map['agesh'])
     ]
     cursor.executemany(
         "INSERT INTO students (roll_no, name, department, semester, user_id) VALUES (?, ?, ?, ?, ?)",
@@ -72,10 +76,10 @@ def init_database():
     cursor.execute("SELECT roll_no, id FROM students")
     student_map = {row[0]: row[1] for row in cursor.fetchall()}
 
-    # 4. Link Parent to Student (parent_adwaith -> Adwaith R.)
+    # 4. Link Parent to Student (parent_adwaith -> Adwaith Krishna R)
     cursor.execute(
         "INSERT INTO parent_student (parent_user_id, student_id) VALUES (?, ?)",
-        (user_map['parent_adwaith'], student_map['ECE2101'])
+        (user_map['parent_adwaith'], student_map['18'])
     )
 
     # 5. Insert Subjects
@@ -111,40 +115,59 @@ def init_database():
 
     # 7. Insert Attendance Records
     dates = ['2026-10-05', '2026-10-07', '2026-10-12', '2026-10-14', '2026-10-19', '2026-10-21']
-    # Attendance for ECT423 (Computer Networks)
-    attendance_records = [
-        # Adwaith (Attended 5 of 6 = ~83%)
-        (student_map['ECE2101'], subject_map['ECT423'], dates[0], 'Present'),
-        (student_map['ECE2101'], subject_map['ECT423'], dates[1], 'Present'),
-        (student_map['ECE2101'], subject_map['ECT423'], dates[2], 'Absent'),
-        (student_map['ECE2101'], subject_map['ECT423'], dates[3], 'Present'),
-        (student_map['ECE2101'], subject_map['ECT423'], dates[4], 'Present'),
-        (student_map['ECE2101'], subject_map['ECT423'], dates[5], 'Present'),
-        # Sneha (Attended 6 of 6 = 100%)
-        (student_map['ECE2102'], subject_map['ECT423'], dates[0], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT423'], dates[1], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT423'], dates[2], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT423'], dates[3], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT423'], dates[4], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT423'], dates[5], 'Present'),
-        # Rahul (Attended 4 of 6 = ~67%)
-        (student_map['ECE2103'], subject_map['ECT423'], dates[0], 'Present'),
-        (student_map['ECE2103'], subject_map['ECT423'], dates[1], 'Absent'),
-        (student_map['ECE2103'], subject_map['ECT423'], dates[2], 'Present'),
-        (student_map['ECE2103'], subject_map['ECT423'], dates[3], 'Absent'),
-        (student_map['ECE2103'], subject_map['ECT423'], dates[4], 'Present'),
-        (student_map['ECE2103'], subject_map['ECT423'], dates[5], 'Present'),
-        # ECT401 Attendance
-        (student_map['ECE2101'], subject_map['ECT401'], dates[0], 'Present'),
-        (student_map['ECE2101'], subject_map['ECT401'], dates[1], 'Present'),
-        (student_map['ECE2101'], subject_map['ECT401'], dates[2], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT401'], dates[0], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT401'], dates[1], 'Present'),
-        (student_map['ECE2102'], subject_map['ECT401'], dates[2], 'Present'),
-        (student_map['ECE2103'], subject_map['ECT401'], dates[0], 'Absent'),
-        (student_map['ECE2103'], subject_map['ECT401'], dates[1], 'Present'),
-        (student_map['ECE2103'], subject_map['ECT401'], dates[2], 'Present')
-    ]
+    
+    # ECT423 (Computer Networks)
+    # Alan (22) - 100%
+    # Adwaith (18) - 83%
+    # Devanarayanan (58) - 100%
+    # Aswin (48) - 67%
+    # Agesh (19) - 83%
+    attendance_records = []
+    
+    # Alan (22)
+    for d in dates:
+        attendance_records.append((student_map['22'], subject_map['ECT423'], d, 'Present'))
+    
+    # Adwaith (18)
+    attendance_records.extend([
+        (student_map['18'], subject_map['ECT423'], dates[0], 'Present'),
+        (student_map['18'], subject_map['ECT423'], dates[1], 'Present'),
+        (student_map['18'], subject_map['ECT423'], dates[2], 'Absent'),
+        (student_map['18'], subject_map['ECT423'], dates[3], 'Present'),
+        (student_map['18'], subject_map['ECT423'], dates[4], 'Present'),
+        (student_map['18'], subject_map['ECT423'], dates[5], 'Present'),
+    ])
+
+    # Devanarayanan (58)
+    for d in dates:
+        attendance_records.append((student_map['58'], subject_map['ECT423'], d, 'Present'))
+
+    # Aswin (48)
+    attendance_records.extend([
+        (student_map['48'], subject_map['ECT423'], dates[0], 'Present'),
+        (student_map['48'], subject_map['ECT423'], dates[1], 'Absent'),
+        (student_map['48'], subject_map['ECT423'], dates[2], 'Present'),
+        (student_map['48'], subject_map['ECT423'], dates[3], 'Absent'),
+        (student_map['48'], subject_map['ECT423'], dates[4], 'Present'),
+        (student_map['48'], subject_map['ECT423'], dates[5], 'Present'),
+    ])
+
+    # Agesh (19)
+    attendance_records.extend([
+        (student_map['19'], subject_map['ECT423'], dates[0], 'Present'),
+        (student_map['19'], subject_map['ECT423'], dates[1], 'Present'),
+        (student_map['19'], subject_map['ECT423'], dates[2], 'Present'),
+        (student_map['19'], subject_map['ECT423'], dates[3], 'Present'),
+        (student_map['19'], subject_map['ECT423'], dates[4], 'Absent'),
+        (student_map['19'], subject_map['ECT423'], dates[5], 'Present'),
+    ])
+
+    # ECT401 Attendance
+    for s_id in ['22', '18', '58', '48', '19']:
+        attendance_records.append((student_map[s_id], subject_map['ECT401'], dates[0], 'Present'))
+        attendance_records.append((student_map[s_id], subject_map['ECT401'], dates[1], 'Present'))
+        attendance_records.append((student_map[s_id], subject_map['ECT401'], dates[2], 'Absent' if s_id == '48' else 'Present'))
+
     cursor.executemany(
         "INSERT INTO attendance (student_id, subject_id, date, status) VALUES (?, ?, ?, ?)",
         attendance_records
@@ -153,22 +176,30 @@ def init_database():
     # 8. Insert Marks
     marks_data = [
         # ECT423 (Computer Networks)
-        (student_map['ECE2101'], subject_map['ECT423'], 'Series Test 1', 50.0, 46.5),
-        (student_map['ECE2101'], subject_map['ECT423'], 'Series Test 2', 50.0, 48.0),
-        (student_map['ECE2101'], subject_map['ECT423'], 'Assignment 1', 20.0, 19.0),
+        (student_map['22'], subject_map['ECT423'], 'Series Test 1', 50.0, 47.0),
+        (student_map['22'], subject_map['ECT423'], 'Series Test 2', 50.0, 48.5),
+        (student_map['22'], subject_map['ECT423'], 'Assignment 1', 20.0, 19.5),
 
-        (student_map['ECE2102'], subject_map['ECT423'], 'Series Test 1', 50.0, 44.0),
-        (student_map['ECE2102'], subject_map['ECT423'], 'Series Test 2', 50.0, 47.0),
-        (student_map['ECE2102'], subject_map['ECT423'], 'Assignment 1', 20.0, 18.5),
+        (student_map['18'], subject_map['ECT423'], 'Series Test 1', 50.0, 46.5),
+        (student_map['18'], subject_map['ECT423'], 'Series Test 2', 50.0, 48.0),
+        (student_map['18'], subject_map['ECT423'], 'Assignment 1', 20.0, 19.0),
 
-        (student_map['ECE2103'], subject_map['ECT423'], 'Series Test 1', 50.0, 35.0),
-        (student_map['ECE2103'], subject_map['ECT423'], 'Series Test 2', 50.0, 38.0),
-        (student_map['ECE2103'], subject_map['ECT423'], 'Assignment 1', 20.0, 15.0),
+        (student_map['58'], subject_map['ECT423'], 'Series Test 1', 50.0, 45.0),
+        (student_map['58'], subject_map['ECT423'], 'Series Test 2', 50.0, 46.0),
+        (student_map['58'], subject_map['ECT423'], 'Assignment 1', 20.0, 18.5),
+
+        (student_map['48'], subject_map['ECT423'], 'Series Test 1', 50.0, 36.0),
+        (student_map['48'], subject_map['ECT423'], 'Series Test 2', 50.0, 39.0),
+        (student_map['48'], subject_map['ECT423'], 'Assignment 1', 20.0, 16.0),
+
+        (student_map['19'], subject_map['ECT423'], 'Series Test 1', 50.0, 44.0),
+        (student_map['19'], subject_map['ECT423'], 'Series Test 2', 50.0, 45.5),
+        (student_map['19'], subject_map['ECT423'], 'Assignment 1', 20.0, 18.0),
 
         # ECT401 (Wireless Communication)
-        (student_map['ECE2101'], subject_map['ECT401'], 'Series Test 1', 50.0, 43.0),
-        (student_map['ECE2101'], subject_map['ECT401'], 'Series Test 2', 50.0, 45.0),
-        (student_map['ECE2101'], subject_map['ECT401'], 'Assignment 1', 20.0, 18.0)
+        (student_map['18'], subject_map['ECT401'], 'Series Test 1', 50.0, 43.0),
+        (student_map['18'], subject_map['ECT401'], 'Series Test 2', 50.0, 45.0),
+        (student_map['18'], subject_map['ECT401'], 'Assignment 1', 20.0, 18.0)
     ]
     cursor.executemany(
         "INSERT INTO marks (student_id, subject_id, assessment_name, max_marks, marks_obtained) VALUES (?, ?, ?, ?, ?)",
@@ -192,10 +223,106 @@ def init_database():
         notices_data
     )
 
+    # 10. Insert Fees (Admin created demands, students paid, faculty verified)
+    fees_data = [
+        # S7 Tuition Fee (Rs 37,500)
+        (student_map['18'], 'Semester 7 Tuition Fee', 37500.0, '2026-11-15', 'Verified', 'UPI', 'UPI/2026/8934710', '2026-10-10 11:20:00', faculty_map['FAC-101'], '2026-10-11 09:30:00', 'Payment confirmed against college bank credit.'),
+        (student_map['22'], 'Semester 7 Tuition Fee', 37500.0, '2026-11-15', 'Paid', 'Net Banking', 'NEFT-SBIN268910', '2026-10-25 14:10:00', None, None, 'Submitted by student, awaiting verification.'),
+        (student_map['58'], 'Semester 7 Tuition Fee', 37500.0, '2026-11-15', 'Verified', 'UPI', 'UPI/2026/9912401', '2026-10-12 10:45:00', faculty_map['FAC-101'], '2026-10-13 16:00:00', 'Verified by class advisor.'),
+        (student_map['48'], 'Semester 7 Tuition Fee', 37500.0, '2026-11-15', 'Pending', None, None, None, None, None, 'Fee invoice generated.'),
+        (student_map['19'], 'Semester 7 Tuition Fee', 37500.0, '2026-11-15', 'Paid', 'Cash / DD', 'DD-CANARA-481920', '2026-10-26 12:00:00', None, None, 'Awaiting physical counter verification.'),
+
+        # University Exam Fee (Rs 2,500)
+        (student_map['18'], 'University Exam Registration Fee (KTU)', 2500.0, '2026-11-05', 'Paid', 'UPI', 'UPI/2026/1102938', '2026-10-28 18:30:00', None, None, 'Submitted, pending teacher verification.'),
+        (student_map['22'], 'University Exam Registration Fee (KTU)', 2500.0, '2026-11-05', 'Verified', 'UPI', 'UPI/2026/4820193', '2026-10-20 15:00:00', faculty_map['FAC-101'], '2026-10-21 10:00:00', 'Approved for hall ticket generation.'),
+        (student_map['58'], 'University Exam Registration Fee (KTU)', 2500.0, '2026-11-05', 'Pending', None, None, None, None, None, 'Due before Nov 5.'),
+        (student_map['48'], 'University Exam Registration Fee (KTU)', 2500.0, '2026-11-05', 'Pending', None, None, None, None, None, 'Due before Nov 5.'),
+        (student_map['19'], 'University Exam Registration Fee (KTU)', 2500.0, '2026-11-05', 'Verified', 'Net Banking', 'NEFT-HDFC77281', '2026-10-22 11:15:00', faculty_map['FAC-102'], '2026-10-23 09:40:00', 'Payment confirmed.')
+    ]
+    cursor.executemany(
+        '''INSERT INTO fees 
+        (student_id, fee_type, amount, due_date, status, payment_method, transaction_ref, paid_at, verified_by_faculty_id, verified_at, remarks)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        fees_data
+    )
+
+    # 11. Insert Study Materials & Notes
+    materials_data = [
+        (subject_map['ECT423'], faculty_map['FAC-101'], 
+         'Module 1: Computer Networks Architecture & TCP/IP Model', 
+         'Detailed lecture notes on OSI layers, TCP three-way handshake, socket communication and delay calculations.', 
+         'Lecture Notes', 'ECT423_Module1_Computer_Networks_Notes.txt', '/static/uploads/ECT423_Module1_Computer_Networks_Notes.txt'),
+        
+        (subject_map['ECT423'], faculty_map['FAC-101'], 
+         'ECT423 Previous Years Solved Question Bank (Modules 1-5)', 
+         'Compilation of university semester question papers with answers and marking schemes.', 
+         'Question Bank', 'ECT423_Question_Bank_Previous_Years.txt', '/static/uploads/ECT423_Question_Bank_Previous_Years.txt'),
+
+        (subject_map['ECT401'], faculty_map['FAC-102'], 
+         'Wireless Cellular Network Planning & Channel Assignment', 
+         'Co-channel interference reduction, handoff strategies, and propagation models.', 
+         'Lecture Notes', 'ECT401_Wireless_Cellular_Notes.txt', '#'),
+
+        (subject_map['ECT423'], faculty_map['FAC-101'], 
+         'Networks Lab Manual - Socket Programming & Wireshark Labs', 
+         'Step-by-step procedures for TCP client-server, UDP echo server, and packet sniffer analysis.', 
+         'Lab Manual', 'Networks_Lab_Manual_S7.txt', '#'),
+
+        (subject_map['ECT423'], faculty_map['FAC-101'], 
+         'NPTEL Lecture Series: Computer Networks (Prof. S. Chakraborty)', 
+         'Recommended online video lectures for routing algorithms and subnetting.', 
+         'Video Lecture', 'NPTEL_Video_Course_Link', 'https://nptel.ac.in/courses/106105183')
+    ]
+    cursor.executemany(
+        '''INSERT INTO study_materials 
+        (subject_id, faculty_id, title, description, material_type, file_name, file_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?)''',
+        materials_data
+    )
+
+    # 12. Insert Assignments
+    assignments_data = [
+        (subject_map['ECT423'], faculty_map['FAC-101'], 
+         'Assignment 1: Python Socket Programming & Protocol Analysis', 
+         'Develop a client-server chat or file exchange application using Python sockets. Capture and explain the TCP packets using Wireshark.', 
+         '2026-11-10', 20.0),
+        (subject_map['ECT423'], faculty_map['FAC-101'], 
+         'Assignment 2: Subnetting & VLSM Address Planning Case Study', 
+         'Design an IP network topology for an engineering campus with 5 departments using Classless Inter-Domain Routing (CIDR).', 
+         '2026-11-20', 20.0),
+        (subject_map['ECT401'], faculty_map['FAC-102'], 
+         'Assignment 1: Handoff Strategies in 4G/5G Wireless Networks', 
+         'Compare hard vs soft handoff and analyze signal-to-interference ratio (SIR) thresholds.', 
+         '2026-11-12', 20.0)
+    ]
+    cursor.executemany(
+        '''INSERT INTO assignments (subject_id, faculty_id, title, description, due_date, max_marks)
+        VALUES (?, ?, ?, ?, ?, ?)''',
+        assignments_data
+    )
+
+    # Fetch assignment IDs
+    cursor.execute("SELECT id FROM assignments ORDER BY id ASC")
+    assign_ids = [row[0] for row in cursor.fetchall()]
+
+    # 13. Insert Assignment Submissions
+    submissions_data = [
+        (assign_ids[0], student_map['18'], 'Submitted client.py and server.py with multi-client threading support and Wireshark screenshot documentation.', '2026-10-27 16:30:00', 19.0, 'Excellent implementation of socket timeout and error handling.', 'Evaluated'),
+        (assign_ids[0], student_map['22'], 'Complete code submission with TCP header analysis and state diagrams.', '2026-10-27 18:00:00', 19.5, 'Well structured report and clean code.', 'Evaluated'),
+        (assign_ids[0], student_map['58'], 'Socket communication script with basic client-server ping.', '2026-10-28 10:15:00', 18.5, 'Good effort. Try adding non-blocking socket options next time.', 'Evaluated'),
+        (assign_ids[0], student_map['48'], 'Submitted source code for client-server file transfer.', '2026-10-29 14:00:00', None, None, 'Submitted'),
+        (assign_ids[0], student_map['19'], 'Implemented TCP client and server with GUI integration.', '2026-10-28 19:20:00', 18.0, 'Great user interface addition.', 'Evaluated')
+    ]
+    cursor.executemany(
+        '''INSERT INTO assignment_submissions 
+        (assignment_id, student_id, submission_text, submitted_at, marks_awarded, feedback, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)''',
+        submissions_data
+    )
+
     conn.commit()
     conn.close()
     print("[3/3] Database seeded successfully into 'college.db'!")
 
 if __name__ == '__main__':
     init_database()
-

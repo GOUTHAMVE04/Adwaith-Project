@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Or Quiz Assessment - EduManage{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-circle-question me-2"></i>Online Assessments & Objective Quizzes</h3>
+    <p class="text-muted mb-0">ECT423 Computer Networks & S7 Core Curriculum</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-custom p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Practice Quiz: Computer Networks Architecture & TCP/IP</h5>
+                    <small class="text-muted">Total: 4 Questions &bull; 10 Minutes &bull; Instant Feedback</small>
+                </div>
+                <span class="badge bg-primary px-3 py-2">Module 1 & 2</span>
+            </div>
+
+            <form id="quizForm" onsubmit="event.preventDefault(); submitQuiz();">
+                <div class="mb-4">
+                    <p class="fw-bold text-dark small mb-2">1. In the TCP three-way handshake, what is the exact sequence of segment flags exchanged?</p>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q1" value="A" id="q1a">
+                        <label class="form-check-label small" for="q1a">SYN &rarr; ACK &rarr; SYN-ACK</label>
+                    </div>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q1" value="B" id="q1b">
+                        <label class="form-check-label small" for="q1b">SYN &rarr; SYN-ACK &rarr; ACK</label>
+                    </div>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q1" value="C" id="q1c">
+                        <label class="form-check-label small" for="q1c">ACK &rarr; SYN &rarr; ACK</label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="fw-bold text-dark small mb-2">2. Which protocol is responsible for mapping a logical IP address to a physical MAC address?</p>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q2" value="A" id="q2a">
+                        <label class="form-check-label small" for="q2a">DNS (Domain Name System)</label>
+                    </div>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q2" value="B" id="q2b">
+                        <label class="form-check-label small" for="q2b">ARP (Address Resolution Protocol)</label>
+                    </div>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q2" value="C" id="q2c">
+                        <label class="form-check-label small" for="q2c">DHCP (Dynamic Host Configuration Protocol)</label>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="fw-bold text-dark small mb-2">3. Why is HTTP designated as a stateless application layer protocol?</p>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q3" value="A" id="q3a">
+                        <label class="form-check-label small" for="q3a">The server retains all client transaction logs forever.</label>
+                    </div>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="radio" name="q3" value="B" id="q3b">
+                        <label class="form-check-label small" for="q3b">The server does not retain information about past client requests.</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                    <i class="fa-solid fa-check-double me-2"></i>Submit Answers & View Score
+                </button>
+            </form>
+
+            <div id="quizResult" class="alert alert-success mt-4 d-none"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitQuiz() {
+    let score = 0;
+    const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+    const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+    const q3 = document.querySelector('input[name="q3"]:checked')?.value;
+
+    if (q1 === 'B') score++;
+    if (q2 === 'B') score++;
+    if (q3 === 'B') score++;
+
+    const res = document.getElementById('quizResult');
+    res.classList.remove('d-none');
+    res.innerHTML = `<strong>Your Score: ${score} / 3 (${Math.round(score/3*100)}%)</strong><br>
+    Q1 Correct: <em>SYN &rarr; SYN-ACK &rarr; ACK</em><br>
+    Q2 Correct: <em>ARP (Address Resolution Protocol)</em><br>
+    Q3 Correct: <em>Server does not retain information about past requests</em>`;
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Registered Courses - EduManage{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-book-open me-2"></i>Registered Curriculum Courses</h3>
+        <p class="text-muted mb-0">Department of {{ student.department }} | Semester {{ student.semester }}</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for c in courses %}
+        <div class="col-md-6">
+            <div class="card card-custom p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary fs-6 px-3 py-1">{{ c.subject_code }}</span>
+                    <span class="badge bg-light text-dark border">4 Credits &bull; Semester {{ c.semester }}</span>
+                </div>
+                <h5 class="fw-bold text-dark mt-2 mb-2">{{ c.subject_name }}</h5>
+                <div class="text-muted small mb-3">
+                    <i class="fa-solid fa-chalkboard-user text-primary me-1"></i>
+                    Instructor: <strong>{{ c.faculty_name or 'Faculty Assigned' }}</strong> ({{ c.designation or 'Professor' }})
+                </div>
+                <div class="mt-auto d-flex gap-2">
+                    <a href="{{ url_for('student_materials', subject_id=c.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fa-solid fa-file-lines me-1"></i>Notes & Questions
+                    </a>
+                    <a href="{{ url_for('student_attendance') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-calendar-check me-1"></i>Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

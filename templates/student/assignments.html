@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Assignments - EduManage{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-pen-ruler me-2"></i>Course Assignments & Tasks</h3>
+        <p class="text-muted mb-0">Student: <strong>{{ student.name }}</strong> (Roll No: {{ student.roll_no }})</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for a in assignments %}
+        <div class="col-md-6">
+            <div class="card card-custom h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1">{{ a.subject_code }}: {{ a.subject_name }}</span>
+                    {% if a.my_status == 'Evaluated' %}
+                        <span class="badge bg-success-subtle text-success border border-success px-3 py-1">
+                            <i class="fa-solid fa-circle-check me-1"></i>Evaluated: {{ a.marks_awarded }} / {{ a.max_marks }}
+                        </span>
+                    {% elif a.my_status == 'Submitted' %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-3 py-1">
+                            <i class="fa-solid fa-clock me-1"></i>Submitted (Pending Evaluation)
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>Submission Pending
+                        </span>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold text-dark mt-2 mb-1">{{ a.title }}</h5>
+                <p class="text-secondary small mb-3">{{ a.description }}</p>
+
+                <div class="d-flex justify-content-between text-muted small mb-3 bg-light p-2 rounded">
+                    <span><i class="fa-solid fa-calendar-xmark me-1 text-danger"></i>Due Date: <strong>{{ a.due_date }}</strong></span>
+                    <span><i class="fa-solid fa-award me-1 text-primary"></i>Max Marks: <strong>{{ a.max_marks }}</strong></span>
+                </div>
+
+                {% if a.my_status in ('Submitted', 'Evaluated') %}
+                    <div class="p-3 bg-light rounded border mb-3">
+                        <div class="small fw-semibold text-muted mb-1">Your Submission:</div>
+                        <p class="small text-dark mb-1">{{ a.submission_text }}</p>
+                        <small class="text-muted">Submitted on: {{ a.submitted_at[:16] }}</small>
+                        {% if a.feedback %}
+                            <div class="mt-2 pt-2 border-top small text-success">
+                                <i class="fa-solid fa-comment-dots me-1"></i>Faculty Feedback: <em>{{ a.feedback }}</em>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="mt-auto pt-2">
+                    {% if a.my_status == 'Pending' %}
+                        <button class="btn btn-primary w-100 fw-semibold" data-bs-toggle="modal" data-bs-target="#submitModal{{ a.id }}">
+                            <i class="fa-solid fa-cloud-arrow-up me-2"></i>Submit Assignment Response
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-secondary w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#submitModal{{ a.id }}">
+                            <i class="fa-solid fa-pen me-1"></i>Update Submission
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Submission Modal -->
+        <div class="modal fade" id="submitModal{{ a.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header bg-primary text-white">
+                        <h6 class="modal-title fw-bold"><i class="fa-solid fa-upload me-2"></i>Submit: {{ a.title }}</h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{{ url_for('student_assignment_submit', assignment_id=a.id) }}">
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Assignment Response / Code / Analysis Summary</label>
+                                <textarea name="submission_text" class="form-control" rows="5" placeholder="Paste your answers, algorithm, GitHub repository link, or submission notes here..." required>{{ a.submission_text or '' }}</textarea>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fa-solid fa-network-wired text-primary me-1"></i>
+                                Submitting sends an HTTP POST request to the central server and updates the student submission register in SQLite.
+                            </small>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success btn-sm px-3 fw-semibold">
+                                <i class="fa-solid fa-check me-1"></i>Save & Submit to Faculty
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12 text-center text-muted py-5">
+            <h5>No assignments currently active.</h5>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

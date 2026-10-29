@@ -31,16 +31,20 @@
                         {# Role-Based Navigation Links #}
                         {% if current_user.role == 'student' %}
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('student_dashboard') }}"><i class="fa-solid fa-gauge me-1"></i> Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_materials') }}"><i class="fa-solid fa-book-bookmark me-1"></i> Study Materials</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_assignments') }}"><i class="fa-solid fa-pen-ruler me-1"></i> Assignments</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_fees') }}"><i class="fa-solid fa-receipt me-1"></i> Fee Payment</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('student_attendance') }}"><i class="fa-solid fa-calendar-check me-1"></i> Attendance</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_marks') }}"><i class="fa-solid fa-chart-simple me-1"></i> Marks & Results</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_timetable') }}"><i class="fa-solid fa-clock me-1"></i> Timetable</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_marks') }}"><i class="fa-solid fa-chart-simple me-1"></i> Marks</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('student_notices') }}"><i class="fa-solid fa-bullhorn me-1"></i> Notices</a></li>
 
                         {% elif current_user.role == 'faculty' %}
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_dashboard') }}"><i class="fa-solid fa-gauge me-1"></i> Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_attendance') }}"><i class="fa-solid fa-user-check me-1"></i> Attendance</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_marks') }}"><i class="fa-solid fa-pen-to-square me-1"></i> Enter Marks</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_timetable') }}"><i class="fa-solid fa-clock me-1"></i> Timetable</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_materials') }}"><i class="fa-solid fa-file-arrow-up me-1"></i> Study Notes</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_assignments') }}"><i class="fa-solid fa-list-check me-1"></i> Assignments</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_fees') }}"><i class="fa-solid fa-badge-check me-1"></i> Verify Fees</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('faculty_notices') }}"><i class="fa-solid fa-bullhorn me-1"></i> Notices</a></li>
 
                         {% elif current_user.role == 'parent' %}
@@ -53,6 +57,7 @@
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-gauge-high me-1"></i> Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_students') }}"><i class="fa-solid fa-user-graduate me-1"></i> Students</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_faculty') }}"><i class="fa-solid fa-chalkboard-user me-1"></i> Faculty</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_fees') }}"><i class="fa-solid fa-money-check-dollar me-1"></i> Fees</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_subjects') }}"><i class="fa-solid fa-book me-1"></i> Subjects</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_timetable') }}"><i class="fa-solid fa-calendar-days me-1"></i> Timetable</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_notices') }}"><i class="fa-solid fa-bullhorn me-1"></i> Notices</a></li>
